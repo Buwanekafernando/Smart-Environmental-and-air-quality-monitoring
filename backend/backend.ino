@@ -1,7 +1,7 @@
 #include <DHT.h>
 
 //SENSOR PINS
-#define DHTPIN 4        
+#define DHTPIN 14        
 #define DHTTYPE DHT11
 
 #define MQ135_PIN 34    
