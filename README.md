@@ -34,14 +34,14 @@ The system collects data from Arduino-based sensors, stores it securely in a MyS
 - 🔔 **Alerts**: Real-time notifications for critical air quality levels
 
 ## 🔧 Sensors Used
-Our system leverages cutting-edge sensors for comprehensive environmental monitoring:
+Our system leverages cutting-edge sensors connected to an **ESP32 microcontroller board** for comprehensive environmental monitoring. The ESP32 serves as the central processing unit, collecting data from all sensors and transmitting it via serial communication.
 
-| Sensor | Purpose | Key Measurements |
-|--------|---------|------------------|
-| **DHT22** 🌡️ | Temperature & Humidity | Temperature (°C), Humidity (%) |
-| **MQ135** 🌬️ | Air Quality | Raw values, Status categories (Healthy/Good/Fair/Bad/Harmful) |
-| **MQ7** ☠️ | Carbon Monoxide | Raw values, Percentage levels |
-| **PIR** 👥 | Motion Detection | Presence detection for occupancy tracking |
+| Sensor | Purpose | Key Measurements | ESP32 Pin |
+|--------|---------|------------------|-----------|
+| **DHT22** 🌡️ | Temperature & Humidity | Temperature (°C), Humidity (%) | GPIO 23 |
+| **MQ135** 🌬️ | Air Quality | Raw values, Status categories (Healthy/Good/Fair/Bad/Harmful) | GPIO 34 |
+| **MQ7** ☠️ | Carbon Monoxide | Raw values, Percentage levels | GPIO 35 |
+| **PIR** 👥 | Motion Detection | Presence detection for occupancy tracking | GPIO 27 |
 
 ## 💽 Data Collection and Storage
 ### How It Works
