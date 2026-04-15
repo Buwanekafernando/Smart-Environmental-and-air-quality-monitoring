@@ -32,11 +32,24 @@ Chart.register(ArcElement, Tooltip)
 
 export default{
 
+props: {
+coLevel: {
+  type: Number,
+  default: 0
+}
+},
 data(){
 return{
-coLevel:65,
 chart:null
 }
+},
+
+watch: {
+  coLevel() {
+    if (this.chart) {
+      this.updateGauge();
+    }
+  }
 },
 
 computed:{
@@ -62,14 +75,6 @@ return "high"
 mounted(){
 
 this.createGauge()
-
-setInterval(()=>{
-
-this.coLevel = 30 + Math.floor(Math.random()*60)
-
-this.updateGauge()
-
-},5000)
 
 },
 
