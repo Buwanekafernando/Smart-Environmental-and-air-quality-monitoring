@@ -12,17 +12,14 @@
 
   <div class="score-section">
 
-    <h1>42</h1>
+    <h1 :style="{ color: currentAqi?.color || '#000' }">{{ currentAqi?.score || 0 }}</h1>
     <p>AQI Score</p>
 
-    <div class="bar">
-
-      <div class="bad"></div>
-      <div class="good"></div>
-
+    <div class="aqi-bar" style="background: #ddd; height: 10px; border-radius: 5px; margin-top: 20px; overflow: hidden;">
+      <div class="aqi-fill" :style="{ backgroundColor: currentAqi?.color, width: Math.min(((currentAqi?.score || 0) / 5), 100) + '%', height: '100%', borderRadius: '5px', transition: 'width 0.5s ease-in-out' }"></div>
     </div>
 
-    <button class="status">Bad</button>
+    <button class="status" :style="{ backgroundColor: currentAqi?.color || '#888' }">{{ currentAqi?.label || 'Loading...' }}</button>
 
   </div>
 
@@ -57,15 +54,21 @@ export default {
 
 components:{Line},
 
+props: {
+  aqiTrend: { type: Array, default: () => [] },
+  currentAqi: { type: Object, default: () => ({}) },
+  labels: { type: Array, default: () => [] }
+},
+
 data(){
 return{
 
 chartData:{
-labels:["00:00","04:00","08:00","12:00","16:00","24:00"],
+labels: [],
 datasets:[
 {
 label:"AQI",
-data:[85,75,45,35,40,70],
+data: [],
 borderColor:"#3b82f6",
 pointRadius:3,
 tension:0.4,
@@ -97,29 +100,31 @@ legend:{display:false}
 scales:{
 y:{
 min:0,
-max:100
+max:500
 }
 }
+}
+
 }
 
 }
 },
-mounted(){
-
-setInterval(()=>{
-
-const newValue = Math.floor(Math.random()*100)
-
-// add new value
-this.chartData.datasets[0].data.push(newValue)
-
-// remove first value
-this.chartData.datasets[0].data.shift()
-
-},3000)
-
+watch: {
+  aqiTrend: {
+    handler(newVal) {
+      this.chartData = {
+        ...this.chartData,
+        labels: this.labels,
+        datasets: [{
+          ...this.chartData.datasets[0],
+          data: newVal
+        }]
+      };
+    },
+    deep: true,
+    immediate: true
+  }
 }
-
 
 }
 </script>
