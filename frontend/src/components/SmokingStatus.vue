@@ -4,7 +4,7 @@
 
 <div class="smoke-card smoking" v-if="motion === 1">
 
-<h3>🚨 People Detected</h3>
+<h3>🚨 Presence: Detected</h3>
 
 <p>Motion in Room</p>
 
@@ -12,7 +12,7 @@
 
 <div class="smoke-card safe" v-else>
 
-<h3>🙂 Room Empty</h3>
+<h3>🙂 Presence: Not Detected</h3>
 
 <p>No Motion Detected</p>
 

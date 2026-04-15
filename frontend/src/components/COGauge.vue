@@ -55,19 +55,15 @@ watch: {
 computed:{
 
 statusText(){
-
-if(this.coLevel<40) return "Low"
-if(this.coLevel<70) return "Medium"
-return "High"
-
+if(this.coLevel<40) return "Good"
+if(this.coLevel<70) return "Fair"
+return "Bad"
 },
 
 statusClass(){
-
 if(this.coLevel<40) return "low"
 if(this.coLevel<70) return "medium"
 return "high"
-
 }
 
 },
