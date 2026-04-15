@@ -2,25 +2,36 @@
 
 <div class="smoke-section">
 
-<div class="smoke-card smoking">
+<div class="smoke-card smoking" v-if="motion === 1">
 
-<h3>🚨 Someone Smoking</h3>
+<h3>🚨 People Detected</h3>
 
-<p>Alert Triggered</p>
+<p>Motion in Room</p>
 
 </div>
 
-<div class="smoke-card safe">
+<div class="smoke-card safe" v-else>
 
-<h3>🙂 Not Smoking</h3>
+<h3>🙂 Room Empty</h3>
 
-<p>All Clear</p>
+<p>No Motion Detected</p>
 
 </div>
 
 </div>
 
 </template>
+
+<script>
+export default {
+  props: {
+    motion: {
+      type: Number,
+      default: 0
+    }
+  }
+}
+</script>
 
 <style>
 
