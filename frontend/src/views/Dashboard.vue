@@ -9,19 +9,7 @@
 <div class="grid-top">
 
 <div class="chart-card">
-<AirQualityChart/>
-</div>
-
-<div class="aqi-card" v-if="latestRecord">
-<h2 :style="{ color: aqiData.color }">{{ aqiData.score }}</h2>
-<p>AQI Score</p>
-
-<div class="aqi-bar" style="background: #eee; height: 10px; border-radius: 5px; margin-bottom: 10px;">
-<div class="aqi-fill" :style="{ backgroundColor: aqiData.color, width: Math.min((aqiData.score / 5), 100) + '%', height: '100%', borderRadius: '5px' }"></div>
-</div>
-
-<span class="aqi-status" :style="{ backgroundColor: aqiData.color, padding: '5px 10px', borderRadius: '15px', color: 'white' }">{{ aqiData.label }}</span>
-
+<AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels"/>
 </div>
 
 </div>
@@ -38,6 +26,11 @@
 <!-- Health Insights -->
 <HealthInsights/>
 
+<!-- Humidity -->
+<div class="chart-card" style="margin-top: 25px;">
+<HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
+</div>
+
 <!-- Smoking Status -->
 <SmokingStatus :motion="latestMotion"/>
 
@@ -52,6 +45,7 @@
 <script>
 import SmokeAlert from "..\\components\\SmokeAlert.vue"
 import AirQualityChart from "..\\components\\AirQualityChart.vue"
+import HumidityChart from "../components/HumidityChart.vue"
 import TemperatureCard from "../components/TemperatureCard.vue"
 import COGauge from "../components/COGauge.vue"
 import HealthInsights from "../components/HealthInsights.vue"
@@ -65,6 +59,7 @@ export default {
   components: {
     SmokeAlert,
     AirQualityChart,
+    HumidityChart,
     TemperatureCard,
     COGauge,
     HealthInsights,
@@ -119,6 +114,18 @@ export default {
         color = "#eab308"; // yellow
       }
       return { score, label, color };
+    },
+    aqiTrend() {
+      return [...this.sensorData].reverse().map(d => Math.floor((d.air_quality / 3000) * 500));
+    },
+    humidityTrend() {
+      return [...this.sensorData].reverse().map(d => d.humidity);
+    },
+    timeLabels() {
+      return [...this.sensorData].reverse().map(d => {
+        let date = new Date(d.timestamp * 1000); // Assuming seconds from python time.time()
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      });
     }
   },
   mounted() {
