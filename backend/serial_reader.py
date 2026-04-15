@@ -1,15 +1,19 @@
-import serial
+import time
+import random
+from db import collection
 
-ser = serial.Serial('COM7', 115200)  # change COM port
+def generate_data():
+    while True:
+        data = {
+            "air_quality": random.randint(100, 3000),
+            "co_level": random.randint(100, 2000),
+            "temperature": round(random.uniform(25, 35), 2),
+            "humidity": round(random.uniform(50, 80), 2),
+            "motion_detected": random.choice([0, 1]),
+            "timestamp": time.time()
+        }
 
-while True:
-    line = ser.readline().decode().strip()
-    print(line)
+        collection.insert_one(data)
+        print("Inserted:", data)
 
-
-def parse_data(line):
-    try:
-        key, value = line.split(":")
-        return {key: int(value)}
-    except:
-        return None
+        time.sleep(3)  # every 3 seconds
