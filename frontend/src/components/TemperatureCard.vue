@@ -20,21 +20,11 @@
 
 export default{
 
-data(){
-return{
-temperature:27
-}
-},
-
-mounted(){
-
-setInterval(()=>{
-
-// simulate sensor value
-this.temperature = 25 + Math.floor(Math.random()*5)
-
-},4000)
-
+props: {
+  temperature: {
+    type: Number,
+    default: 0
+  }
 }
 
 }

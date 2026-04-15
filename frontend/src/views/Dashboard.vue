@@ -12,15 +12,15 @@
 <AirQualityChart/>
 </div>
 
-<div class="aqi-card">
-<h2>42</h2>
+<div class="aqi-card" v-if="latestRecord">
+<h2 :style="{ color: aqiData.color }">{{ aqiData.score }}</h2>
 <p>AQI Score</p>
 
-<div class="aqi-bar">
-<div class="aqi-fill"></div>
+<div class="aqi-bar" style="background: #eee; height: 10px; border-radius: 5px; margin-bottom: 10px;">
+<div class="aqi-fill" :style="{ backgroundColor: aqiData.color, width: Math.min((aqiData.score / 5), 100) + '%', height: '100%', borderRadius: '5px' }"></div>
 </div>
 
-<span class="aqi-status">Bad</span>
+<span class="aqi-status" :style="{ backgroundColor: aqiData.color, padding: '5px 10px', borderRadius: '15px', color: 'white' }">{{ aqiData.label }}</span>
 
 </div>
 
@@ -29,9 +29,9 @@
 <!-- Sensors -->
 <div class="grid-two">
 
-<TemperatureCard/>
+<TemperatureCard :temperature="latestTemperature"/>
 
-<COGauge/>
+<COGauge :coLevel="latestCO"/>
 
 </div>
 
@@ -39,7 +39,7 @@
 <HealthInsights/>
 
 <!-- Smoking Status -->
-<SmokingStatus/>
+<SmokingStatus :motion="latestMotion"/>
 
 <!-- Cost -->
 <CostPollution/>
@@ -76,6 +76,50 @@ export default {
     return {
       sensorData: []
     };
+  },
+  computed: {
+    latestRecord() {
+      return this.sensorData.length > 0 ? this.sensorData[0] : null;
+    },
+    latestTemperature() {
+      return this.latestRecord ? this.latestRecord.temperature : 0;
+    },
+    latestCO() {
+      // Scale CO raw value (100-2000) to percentage for gauge (0-100)
+      if (!this.latestRecord) return 0;
+      let rawCO = this.latestRecord.co_level;
+      let percent = (rawCO / 2000) * 100;
+      return Math.min(Math.round(percent), 100);
+    },
+    latestMotion() {
+      return this.latestRecord ? this.latestRecord.motion_detected : 0;
+    },
+    aqiData() {
+      if (!this.latestRecord) return { score: 0, label: "Loading...", color: "#888" };
+      let raw = this.latestRecord.air_quality;
+      // Convert raw MQ-135 to AQI (threshold based mapping)
+      let score = Math.floor((raw / 3000) * 500); 
+      let label = "Good";
+      let color = "#22c55e"; // green
+      
+      if (score > 300) {
+        label = "Hazardous";
+        color = "#7f1d1d"; // dark red
+      } else if (score > 200) {
+        label = "Very Unhealthy";
+        color = "#991b1b"; // red
+      } else if (score > 150) {
+        label = "Unhealthy";
+        color = "#ef4444"; // light red
+      } else if (score > 100) {
+        label = "Unhealthy for Sensitive Grps";
+        color = "#f97316"; // orange
+      } else if (score > 50) {
+        label = "Moderate";
+        color = "#eab308"; // yellow
+      }
+      return { score, label, color };
+    }
   },
   mounted() {
     this.fetchData();
