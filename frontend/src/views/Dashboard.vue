@@ -58,6 +58,7 @@ import HealthInsights from "../components/HealthInsights.vue"
 import SmokingStatus from "../components/SmokingStatus.vue"
 import CostPollution from "../components/CostPollution.vue"
 import ChatBot from "../components/ChatBot.vue"
+import axios from "axios";
 
 export default {
   name: "Dashboard",
@@ -70,6 +71,25 @@ export default {
     SmokingStatus,
     CostPollution,
     ChatBot
+  },
+  data() {
+    return {
+      sensorData: []
+    };
+  },
+  mounted() {
+    this.fetchData();
+    setInterval(this.fetchData, 3000); // every 3 sec
+  },
+  methods: {
+    async fetchData() {
+      try {
+        const res = await axios.get("http://localhost:5000/api/data");
+        this.sensorData = res.data;
+      } catch (error) {
+        console.error("Error fetching sensor data:", error);
+      }
+    }
   }
 }
 </script>
