@@ -21,6 +21,11 @@
 
     <button class="status" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#888' }">{{ currentAqi && currentAqi.label ? currentAqi.label : 'Loading...' }}</button>
 
+    <div v-if="trendsData" style="margin-top: 20px; text-align: left; background: white; padding: 10px; border-radius: 8px;">
+      <p style="margin: 5px 0;"><strong>Trend:</strong> {{ trendsData.trend }}</p>
+      <p style="margin: 5px 0;"><strong>Forecast:</strong> {{ trendsData.forecast }}</p>
+    </div>
+
   </div>
 
 </div>
@@ -57,7 +62,8 @@ components:{Line},
 props: {
   aqiTrend: { type: Array, default: () => [] },
   currentAqi: { type: Object, default: () => ({}) },
-  labels: { type: Array, default: () => [] }
+  labels: { type: Array, default: () => [] },
+  trendsData: { type: Object, default: null }
 },
 
 data(){

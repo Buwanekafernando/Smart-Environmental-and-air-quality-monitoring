@@ -20,23 +20,23 @@
     </div>
 
     <!-- Alert Override (Global) -->
-    <SmokeAlert/>
+    <SmokeAlert :coAnalysis="coAnalysis"/>
 
     <!-- Top Section -->
     <div class="grid-top">
       <div class="chart-card">
-        <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels"/>
+        <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels" :trendsData="trendsData"/>
       </div>
     </div>
 
     <!-- Sensors -->
     <div class="grid-two">
       <TemperatureCard :temperature="latestTemperature"/>
-      <COGauge :coLevel="latestCO"/>
+      <COGauge :coLevel="latestCO" :coAnalysis="coAnalysis"/>
     </div>
 
     <!-- Health Insights -->
-    <HealthInsights/>
+    <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
 
     <!-- Humidity & Cost -->
     <div class="grid-two">

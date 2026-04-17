@@ -1,6 +1,6 @@
 <template>
 
-<div class="health-card">
+<div class="health-card" :style="{ borderLeft: healthRisk ? '5px solid ' + healthRisk.color : 'none' }">
 
 <h2>Room Health & Insights</h2>
 
@@ -9,11 +9,10 @@
 <!-- Left side -->
 <div class="people-card">
 
-<h4>Any people in the Room?</h4>
+<h4>Current Risk Status</h4>
 
-<div class="people-chart">
-✔
-<p>Human Presence Detected</p>
+<div class="people-chart" :style="{ color: healthRisk ? healthRisk.color : '#888' }">
+  <h3>{{ healthRisk ? healthRisk.status : "Loading..." }}</h3>
 </div>
 
 </div>
@@ -21,26 +20,28 @@
 <!-- Right side -->
 <div class="health-info">
 
-<p>
-Motion sensor has detected 2 people in the room.
-Air quality monitoring is adjusted based on occupancy.
+<p v-if="healthRisk && healthRisk.status === 'SAFE'">
+  The air quality is great, and CO levels are normal. Keep the room ventilated as usual.
+</p>
+<p v-else-if="healthRisk && healthRisk.status === 'MODERATE'">
+  Air quality or CO levels are slightly elevated. Consider opening a window or turning on an air purifier.
+</p>
+<p v-else-if="healthRisk && healthRisk.status === 'UNSAFE'">
+  Warning: The room environment is unsafe! High pollution or CO levels detected. Evacuate or ventilate immediately!
+</p>
+<p v-else>
+  Gathering health data...
 </p>
 
 <div class="health-bar">
-
-<div class="health-fill"></div>
-
+<div class="health-fill" :style="{ background: healthRisk ? healthRisk.color : '#ddd', width: healthRisk ? (healthRisk.status === 'SAFE' ? '100%' : healthRisk.status === 'MODERATE' ? '50%' : '15%') : '100%' }"></div>
 </div>
 
-<p class="health-score">65% Healthy</p>
-
 <ul class="suggestions">
-
 <li>Open window for better air circulation</li>
 <li>Consider using an air purifier</li>
 <li>Avoid smoking in enclosed space</li>
 <li>Monitor CO levels regularly</li>
-
 </ul>
 
 </div>
@@ -50,6 +51,15 @@ Air quality monitoring is adjusted based on occupancy.
 </div>
 
 </template>
+
+<script>
+export default {
+  props: {
+    healthRisk: { type: Object, default: null },
+    trendsData: { type: Object, default: null }
+  }
+}
+</script>
 
 <style>
 
