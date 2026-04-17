@@ -12,14 +12,14 @@
 
   <div class="score-section">
 
-    <h1 :style="{ color: currentAqi?.color || '#000' }">{{ currentAqi?.score || 0 }}</h1>
+    <h1 :style="{ color: currentAqi ? currentAqi.color : '#000' }">{{ currentAqi ? currentAqi.score : 0 }}</h1>
     <p>AQI Score</p>
 
     <div class="aqi-bar" style="background: #ddd; height: 10px; border-radius: 5px; margin-top: 20px; overflow: hidden;">
-      <div class="aqi-fill" :style="{ backgroundColor: currentAqi?.color, width: Math.min(((currentAqi?.score || 0) / 5), 100) + '%', height: '100%', borderRadius: '5px', transition: 'width 0.5s ease-in-out' }"></div>
+      <div class="aqi-fill" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#ddd', width: Math.min(((currentAqi ? currentAqi.score : 0) / 5), 100) + '%', height: '100%', borderRadius: '5px', transition: 'width 0.5s ease-in-out' }"></div>
     </div>
 
-    <button class="status" :style="{ backgroundColor: currentAqi?.color || '#888' }">{{ currentAqi?.label || 'Loading...' }}</button>
+    <button class="status" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#888' }">{{ currentAqi && currentAqi.label ? currentAqi.label : 'Loading...' }}</button>
 
   </div>
 
@@ -126,7 +126,6 @@ watch: {
   }
 }
 
-}
 </script>
 
 <style>
