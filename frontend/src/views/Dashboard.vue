@@ -141,6 +141,7 @@ export default {
         let date = new Date(d.timestamp * 1000); // Assuming seconds from python time.time()
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       });
+    },
     estimatedCost() {
       if (!this.latestRecord) return 1500;
       let score = Math.floor(this.latestRecord.air_quality);
