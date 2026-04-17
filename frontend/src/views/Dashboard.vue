@@ -80,20 +80,18 @@ export default {
       return this.latestRecord ? this.latestRecord.temperature : 0;
     },
     latestCO() {
-      // Scale CO raw value (100-2000) to percentage for gauge (0-100)
+      // Scale CO raw value to percentage for gauge (0-100)
       if (!this.latestRecord) return 0;
       let rawCO = this.latestRecord.co_level;
-      let percent = (rawCO / 2000) * 100;
-      return Math.min(Math.round(percent), 100);
+      return Math.min(Math.round(rawCO), 100);
     },
     latestMotion() {
       return this.latestRecord ? this.latestRecord.motion_detected : 0;
     },
     aqiData() {
       if (!this.latestRecord) return { score: 0, label: "Loading...", color: "#888" };
-      let raw = this.latestRecord.air_quality;
-      // Convert raw MQ-135 to AQI (threshold based mapping)
-      let score = Math.floor((raw / 3000) * 500); 
+      let score = Math.floor(this.latestRecord.air_quality);
+      
       let label = "Good";
       let color = "#22c55e"; // green
       
@@ -116,7 +114,7 @@ export default {
       return { score, label, color };
     },
     aqiTrend() {
-      return [...this.sensorData].reverse().map(d => Math.floor((d.air_quality / 3000) * 500));
+      return [...this.sensorData].reverse().map(d => Math.floor(d.air_quality));
     },
     humidityTrend() {
       return [...this.sensorData].reverse().map(d => d.humidity);
