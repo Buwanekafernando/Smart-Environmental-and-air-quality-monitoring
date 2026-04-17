@@ -1,46 +1,57 @@
 <template>
+<div class="dashboard-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>🧪 LabDash</h2>
+    <div class="nav-item active">Overview</div>
+    <div class="nav-item">Air Quality</div>
+    <div class="nav-item">CO Monitoring</div>
+    <div class="nav-item">Temp & Humidity</div>
+    <div class="nav-item">IR Detection</div>
+    <div class="nav-item">Reports</div>
+    <div class="nav-item">Alerts</div>
+    <div class="nav-item">Chatbot</div>
+  </aside>
 
-<div class="dashboard">
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="header">
+      <h1>Intelligent Environment Monitoring</h1>
+    </div>
 
-<!-- Alert -->
-<SmokeAlert/>
+    <!-- Alert Override (Global) -->
+    <SmokeAlert/>
 
-<!-- Top Section -->
-<div class="grid-top">
+    <!-- Top Section -->
+    <div class="grid-top">
+      <div class="chart-card">
+        <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels"/>
+      </div>
+    </div>
 
-<div class="chart-card">
-<AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels"/>
+    <!-- Sensors -->
+    <div class="grid-two">
+      <TemperatureCard :temperature="latestTemperature"/>
+      <COGauge :coLevel="latestCO"/>
+    </div>
+
+    <!-- Health Insights -->
+    <HealthInsights/>
+
+    <!-- Humidity & Cost -->
+    <div class="grid-two">
+      <div class="chart-card">
+        <HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
+      </div>
+      <CostPollution/>
+    </div>
+
+    <!-- Smoking Status -->
+    <SmokingStatus :motion="latestMotion"/>
+    
+    <ChatBot/>
+  </main>
 </div>
-
-</div>
-
-<!-- Sensors -->
-<div class="grid-two">
-
-<TemperatureCard :temperature="latestTemperature"/>
-
-<COGauge :coLevel="latestCO"/>
-
-</div>
-
-<!-- Health Insights -->
-<HealthInsights/>
-
-<!-- Humidity -->
-<div class="chart-card" style="margin-top: 25px;">
-<HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
-</div>
-
-<!-- Smoking Status -->
-<SmokingStatus :motion="latestMotion"/>
-
-<!-- Cost -->
-<CostPollution/>
-
-<ChatBot/>
-
-</div>
-
 </template>
 <script>
 import SmokeAlert from "..\\components\\SmokeAlert.vue"
@@ -69,7 +80,10 @@ export default {
   },
   data() {
     return {
-      sensorData: []
+      sensorData: [],
+      trendsData: null,
+      healthRisk: null,
+      coAnalysis: null
     };
   },
   computed: {
@@ -133,8 +147,16 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const res = await axios.get("http://localhost:5000/api/data");
-        this.sensorData = res.data;
+        const [resData, resTrends, resHealth, resCo] = await Promise.all([
+          axios.get("http://localhost:5000/api/data"),
+          axios.get("http://localhost:5000/api/trends"),
+          axios.get("http://localhost:5000/api/health-risk"),
+          axios.get("http://localhost:5000/api/co-analysis")
+        ]);
+        this.sensorData = resData.data;
+        this.trendsData = resTrends.data;
+        this.healthRisk = resHealth.data;
+        this.coAnalysis = resCo.data;
       } catch (error) {
         console.error("Error fetching sensor data:", error);
       }
