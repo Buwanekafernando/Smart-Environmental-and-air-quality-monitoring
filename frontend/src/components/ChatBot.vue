@@ -41,6 +41,7 @@ placeholder="Ask about the dashboard..."
 </template>
 
 <script>
+import axios from "axios";
 
 export default{
 
@@ -55,7 +56,7 @@ messages:[
 {
 id:1,
 type:"bot",
-text:"Hello! I can help explain the environmental data."
+text:"Hello! I am your intelligent lab assistant. Ask me about the air quality!"
 }
 ]
 
@@ -68,50 +69,42 @@ toggleChat(){
 this.isOpen=!this.isOpen
 },
 
-sendMessage(){
+async sendMessage(){
 
 if(!this.userInput) return
+
+const question = this.userInput;
 
 this.messages.push({
 id:Date.now(),
 type:"user",
-text:this.userInput
+text:question
 })
 
+this.userInput=""
 this.typing=true
 
-const question=this.userInput.toLowerCase()
-
-setTimeout(()=>{
-
-let reply=""
-
-if(question.includes("air"))
-reply="The current air quality indicates moderate pollution."
-
-else if(question.includes("temperature"))
-reply="The room temperature is around 27°C."
-
-else if(question.includes("people"))
-reply="The PIR sensor indicates human presence in the room."
-
-else if(question.includes("smoke"))
-reply="Smoking activity was detected earlier."
-
-else
-reply="I'm analyzing the environmental dashboard."
-
-this.messages.push({
-id:Date.now()+1,
-type:"bot",
-text:reply
-})
+try {
+  const res = await axios.post("http://localhost:5000/api/chatbot", { message: question });
+  this.messages.push({
+    id:Date.now()+1,
+    type:"bot",
+    text:res.data.reply
+  });
+} catch (error) {
+  this.messages.push({
+    id:Date.now()+1,
+    type:"bot",
+    text:"Sorry, I am having trouble connecting to the lab database."
+  });
+}
 
 this.typing=false
 
-},1000)
-
-this.userInput=""
+this.$nextTick(() => {
+  const container = this.$el.querySelector('.chat-messages');
+  if(container) container.scrollTop = container.scrollHeight;
+});
 
 }
 
