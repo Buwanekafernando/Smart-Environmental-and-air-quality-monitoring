@@ -112,8 +112,6 @@ max:500
 }
 
 }
-
-}
 },
 watch: {
   aqiTrend: {
@@ -131,7 +129,7 @@ watch: {
     immediate: true
   }
 }
-
+};
 </script>
 
 <style>
