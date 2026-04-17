@@ -144,63 +144,116 @@ export default {
 </script>
 
 <style>
-
-.dashboard{
-  padding:30px;
-  font-family:Arial;
+* {
+  box-sizing: border-box;
 }
 
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:20px;
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:#f4f7fb;
 }
 
-.card{
-background:white;
-border-radius:16px;
-padding:25px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
 }
 
-.row{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-margin-top:30px;
+.sidebar {
+  width: 250px;
+  background: white;
+  padding: 30px 20px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.dashboard{
-max-width:1200px;
-margin:auto;
-padding:30px;
+.sidebar h2 {
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.grid-two{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:25px;
-margin-top:25px;
+.nav-item {
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #555;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-@media (max-width:900px){
-
-.grid-two{
-grid-template-columns:1fr;
+.nav-item:hover, .nav-item.active {
+  background: #eef2f6;
+  color: #2b5cff;
 }
 
+.main-content {
+  flex: 1;
+  padding: 30px 40px;
+  overflow-y: auto;
 }
 
-.dashboard{
-background:#dbe7f3;
-min-height:100vh;
-padding:40px;
+.header {
+  margin-bottom: 30px;
 }
 
-.gauge-container{
-width:200px;
-margin:auto;
+.header h1 {
+  margin: 0;
+  color: #222;
+  font-size: 28px;
 }
 
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
 
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.grid-top {
+  margin-bottom: 25px;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-bottom: 25px;
+  margin-top: 25px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+  .grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gauge-container {
+  width: 200px;
+  margin: auto;
+}
 </style>
