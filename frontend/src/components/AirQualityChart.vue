@@ -6,7 +6,7 @@
 
     <h2>🌬 Air Quality</h2>
 
-    <Line :data="chartData" :options="chartOptions"/>
+    <Line :data="computedChartData" :options="chartOptions"/>
 
   </div>
 
@@ -113,20 +113,15 @@ max:500
 
 }
 },
-watch: {
-  aqiTrend: {
-    handler(newVal) {
-      this.chartData = {
-        ...this.chartData,
-        labels: this.labels,
-        datasets: [{
-          ...this.chartData.datasets[0],
-          data: newVal
-        }]
-      };
-    },
-    deep: true,
-    immediate: true
+computed: {
+  computedChartData() {
+    return {
+      labels: this.labels,
+      datasets: [{
+        ...this.chartData.datasets[0],
+        data: this.aqiTrend
+      }]
+    };
   }
 }
 };

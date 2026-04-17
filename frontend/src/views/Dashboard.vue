@@ -3,19 +3,17 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <h2>🧪 LabDash</h2>
-    <div class="nav-item active">Overview</div>
-    <div class="nav-item">Air Quality</div>
-    <div class="nav-item">CO Monitoring</div>
-    <div class="nav-item">Temp & Humidity</div>
-    <div class="nav-item">IR Detection</div>
-    <div class="nav-item">Reports</div>
-    <div class="nav-item">Alerts</div>
-    <div class="nav-item">Chatbot</div>
+    <div class="nav-item" :class="{active: activeTab==='overview'}" @click="scrollTo('overview')">Overview</div>
+    <div class="nav-item" :class="{active: activeTab==='air-quality'}" @click="scrollTo('air-quality')">Air Quality</div>
+    <div class="nav-item" :class="{active: activeTab==='co-monitoring'}" @click="scrollTo('co-monitoring')">CO & Temp</div>
+    <div class="nav-item" :class="{active: activeTab==='health'}" @click="scrollTo('health')">Room Health</div>
+    <div class="nav-item" :class="{active: activeTab==='pollution'}" @click="scrollTo('pollution')">Reports & Cost</div>
+    <div class="nav-item" :class="{active: activeTab==='ir'}" @click="scrollTo('ir')">IR Detection</div>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="header">
+    <div class="header" id="overview">
       <h1>Intelligent Environment Monitoring</h1>
     </div>
 
@@ -23,31 +21,35 @@
     <SmokeAlert :coAnalysis="coAnalysis"/>
 
     <!-- Top Section -->
-    <div class="grid-top">
+    <div class="grid-top" id="air-quality">
       <div class="chart-card">
         <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels" :trendsData="trendsData"/>
       </div>
     </div>
 
     <!-- Sensors -->
-    <div class="grid-two">
+    <div class="grid-two" id="co-monitoring">
       <TemperatureCard :temperature="latestTemperature"/>
       <COGauge :coLevel="latestCO" :coAnalysis="coAnalysis"/>
     </div>
 
     <!-- Health Insights -->
-    <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
+    <div id="health">
+      <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
+    </div>
 
     <!-- Humidity & Cost -->
-    <div class="grid-two">
+    <div class="grid-two" id="pollution">
       <div class="chart-card">
         <HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
       </div>
-      <CostPollution/>
+      <CostPollution :cost="estimatedCost"/>
     </div>
 
     <!-- Smoking Status -->
-    <SmokingStatus :motion="latestMotion"/>
+    <div id="ir">
+      <SmokingStatus :motion="latestMotion"/>
+    </div>
     
     <ChatBot/>
   </main>
@@ -83,7 +85,8 @@ export default {
       sensorData: [],
       trendsData: null,
       healthRisk: null,
-      coAnalysis: null
+      coAnalysis: null,
+      activeTab: 'overview'
     };
   },
   computed: {
@@ -138,6 +141,12 @@ export default {
         let date = new Date(d.timestamp * 1000); // Assuming seconds from python time.time()
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       });
+    estimatedCost() {
+      if (!this.latestRecord) return 1500;
+      let score = Math.floor(this.latestRecord.air_quality);
+      let baseCost = 500;
+      let pollutionPenalty = score * 5;
+      return baseCost + pollutionPenalty;
     }
   },
   mounted() {
@@ -145,6 +154,14 @@ export default {
     setInterval(this.fetchData, 3000); // every 3 sec
   },
   methods: {
+    scrollTo(id) {
+      this.activeTab = id;
+      const el = document.getElementById(id);
+      const contentPane = document.querySelector('.main-content');
+      if(el && contentPane) {
+        contentPane.scrollTo({ top: el.offsetTop - 30, behavior: 'smooth' });
+      }
+    },
     async fetchData() {
       try {
         const [resData, resTrends, resHealth, resCo] = await Promise.all([

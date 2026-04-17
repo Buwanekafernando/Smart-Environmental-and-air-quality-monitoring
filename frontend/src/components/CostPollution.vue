@@ -4,10 +4,10 @@
 
 <div class="cost-card">
 
-<h3>Cost of Pollution</h3>
+<h3>Cost of Pollution (Estimated Target)</h3>
 
 <div class="cost-value">
-Rs. 1500.00
+Rs. {{ cost.toFixed(2) }}
 </div>
 
 <canvas id="pollutionChart"></canvas>
@@ -32,6 +32,12 @@ import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 
 export default{
+props: {
+  cost: {
+    type: Number,
+    default: 1500
+  }
+},
 
 methods:{
 

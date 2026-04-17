@@ -2,7 +2,7 @@
   <div class="air-card">
     <div class="chart-section">
       <h2>💧 Humidity Trend</h2>
-      <Line :data="chartData" :options="chartOptions"/>
+      <Line :data="computedChartData" :options="chartOptions"/>
     </div>
   </div>
 </template>
@@ -73,20 +73,15 @@ export default {
       }
     }
   },
-  watch: {
-    humidityTrend: {
-      handler(newVal) {
-        this.chartData = {
-          ...this.chartData,
-          labels: this.labels,
-          datasets: [{
-            ...this.chartData.datasets[0],
-            data: newVal
-          }]
-        };
-      },
-      deep: true,
-      immediate: true
+  computed: {
+    computedChartData() {
+      return {
+        labels: this.labels,
+        datasets: [{
+          ...this.chartData.datasets[0],
+          data: this.humidityTrend
+        }]
+      };
     }
   }
 }
