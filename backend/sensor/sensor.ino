@@ -110,68 +110,55 @@ void setup() {
 // ═══════════════════════════════════════════════════
 void loop() {
   static unsigned long lastTime = 0;
-  static int readingNum = 0;
   unsigned long now = millis();
 
   if (now - lastTime < INTERVAL) return;
   lastTime = now;
-  readingNum++;
 
-  // ── reading header ───────────────────────────
-  Serial.print("┌── Reading #");
-  Serial.print(readingNum);
-  Serial.print("  (");
-  Serial.print(now / 1000);
-  Serial.println("s uptime) ──────────────");
-
-  // ── 1. DHT11 ─────────────────────────────────
+  // ── Read sensors ───────────────────────────
   float temp = dht.readTemperature();
   float humi = dht.readHumidity();
-  Serial.print("│ DHT11   │ ");
-  if (isnan(temp) || isnan(humi)) {
-    Serial.println("ERROR — check 4.7k pull-up on P4");
-  } else {
-    Serial.print("Temp: ");
-    Serial.print(temp, 1);
-    Serial.print(" C   Humidity: ");
-    Serial.print(humi, 1);
-    Serial.println(" %");
-  }
 
-  // ── 2. MQ135 — Air Quality ───────────────────
-  int   mq135Raw = readADC(MQ135_PIN);
-  float mq135V   = toVolts(mq135Raw);
-  Serial.print("│ MQ135   │ ");
-  Serial.print("Raw: ");
-  Serial.print(mq135Raw);
-  Serial.print("   Volt: ");
-  Serial.print(mq135V, 2);
-  Serial.print("V   Status: ");
-  Serial.println(aqLabel(mq135Raw));
+  int mq135Raw = readADC(MQ135_PIN);
+  int mq7Raw   = readADC(MQ7_PIN);
 
-  // ── 3. MQ7 — Carbon Monoxide ─────────────────
-  int   mq7Raw = readADC(MQ7_PIN);
-  float mq7V   = toVolts(mq7Raw);
-  Serial.print("│ MQ7     │ ");
-  Serial.print("Raw: ");
-  Serial.print(mq7Raw);
-  Serial.print("   Volt: ");
-  Serial.print(mq7V, 2);
-  Serial.print("V   Status: ");
-  Serial.println(coLabel(mq7Raw));
-
-  // ── 4. PIR — Motion ──────────────────────────
   bool motion = (digitalRead(PIR_PIN) == HIGH);
-  Serial.print("│ PIR     │ Motion: ");
-  Serial.println(motion ? "DETECTED  <<<" : "none");
 
-  // ── smoke / CO alert logic ───────────────────
-  bool smokeAlert = (mq135Raw > MQ135_WARN)
-                 && (mq7Raw   > MQ7_WARN)
-                 && motion;
-  if (smokeAlert) {
-    Serial.println("│ *** SMOKE / CO ALERT — person present ***");
-  }
+  // ── Handle NaN values (important for JSON) ──
+  if (isnan(temp)) temp = -1;
+  if (isnan(humi)) humi = -1;
 
-  Serial.println("└───────────────────────────────────────\n");
+  // ── JSON Output ────────────────────────────
+  Serial.print("{");
+
+  Serial.print("\"mq7\":");
+  Serial.print(mq7Raw);
+  Serial.print(",");
+
+  Serial.print("\"mq135\":");
+  Serial.print(mq135Raw);
+  Serial.print(",");
+
+  Serial.print("\"temperature\":");
+  Serial.print(temp);
+  Serial.print(",");
+
+  Serial.print("\"humidity\":");
+  Serial.print(humi);
+  Serial.print(",");
+
+  Serial.print("\"motion\":");
+  Serial.print(motion ? "true" : "false");
+  Serial.print(",");
+
+  Serial.print("\"air_quality\":\"");
+  Serial.print(aqLabel(mq135Raw));
+  Serial.print("\",");
+
+  Serial.print("\"co_level\":\"");
+  Serial.print(coLabel(mq7Raw));
+  Serial.print("\"");
+
+  Serial.println("}");
+
 }
