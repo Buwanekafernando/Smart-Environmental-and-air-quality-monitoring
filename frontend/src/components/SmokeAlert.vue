@@ -1,17 +1,8 @@
 <template>
-
 <div class="alert-box" v-if="coAnalysis && coAnalysis.smoking_detected">
-
-<h2>🚨 Smoke/High CO Alert</h2>
-
-<p>Abnormal CO level spikes detected! Possible smoking or fire hazard.</p>
-
-<div class="recommend">
-Recommendation: Please open windows for better ventilation and check the premises immediately.
+  <span class="icon">🚨</span>
+  <span class="msg">Smoke/High CO Detected!</span>
 </div>
-
-</div>
-
 </template>
 
 <script>
@@ -25,29 +16,23 @@ export default {
 }
 </script>
 
-<style>
-
-.alert-box{
-background:#f8e7e7;
-border:2px solid red;
-padding:20px;
-border-radius:10px;
-margin-bottom:30px;
-/* Add a pulsing animation to alert */
-animation: pulse 2s infinite;
+<style scoped>
+.alert-box {
+  background: #ff4b6e;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
-
-.recommend{
-background:white;
-padding:10px;
-border-radius:8px;
-margin-top:10px;
-}
-
 </style>

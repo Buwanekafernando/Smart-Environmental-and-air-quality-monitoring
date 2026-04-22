@@ -1,55 +1,43 @@
 <template>
-
-<div class="health-card" :style="{ borderLeft: healthRisk ? '5px solid ' + healthRisk.color : 'none' }">
-
-<h2>Room Health & Insights</h2>
-
-<div class="health-grid">
-
-<!-- Left side -->
-<div class="people-card">
-
-<h4>Current Risk Status</h4>
-
-<div class="people-chart" :style="{ color: healthRisk ? healthRisk.color : '#888' }">
-  <h3>{{ healthRisk ? healthRisk.status : "Loading..." }}</h3>
+<div class="health-card" :style="{ borderLeft: healthRisk ? '6px solid ' + healthRisk.color : 'none' }">
+  <div class="card-header">
+    <h2>🏥 Room Health & Insights</h2>
+    <div v-if="healthRisk" class="risk-label" :style="{ color: healthRisk.color }">
+      {{ healthRisk.status }}
+    </div>
+  </div>
+  
+  <div class="health-grid">
+    <div class="status-box">
+      <div class="status-content" :style="{ color: healthRisk ? healthRisk.color : '#888' }">
+        <span class="status-text">{{ healthRisk ? healthRisk.status : "..." }}</span>
+      </div>
+      <p class="sub-label">Current Risk</p>
+    </div>
+    
+    <div class="health-details">
+      <p class="summary" v-if="healthRisk">
+        {{ getSummaryText }}
+      </p>
+      
+      <div class="progress-section">
+        <div class="health-bar">
+          <div class="health-fill" :style="{ background: healthRisk ? healthRisk.color : '#cbd5e1', width: healthProgress }"></div>
+        </div>
+      </div>
+      
+      <div class="action-plan">
+        <p class="plan-title">Action Plan:</p>
+        <ul class="suggestions">
+          <li>Open window</li>
+          <li>Purifier ON</li>
+          <li>No smoking</li>
+          <li>Check CO</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
-
-</div>
-
-<!-- Right side -->
-<div class="health-info">
-
-<p v-if="healthRisk && healthRisk.status === 'SAFE'">
-  The air quality is great, and CO levels are normal. Keep the room ventilated as usual.
-</p>
-<p v-else-if="healthRisk && healthRisk.status === 'MODERATE'">
-  Air quality or CO levels are slightly elevated. Consider opening a window or turning on an air purifier.
-</p>
-<p v-else-if="healthRisk && healthRisk.status === 'UNSAFE'">
-  Warning: The room environment is unsafe! High pollution or CO levels detected. Evacuate or ventilate immediately!
-</p>
-<p v-else>
-  Gathering health data...
-</p>
-
-<div class="health-bar">
-<div class="health-fill" :style="{ background: healthRisk ? healthRisk.color : '#ddd', width: healthRisk ? (healthRisk.status === 'SAFE' ? '100%' : healthRisk.status === 'MODERATE' ? '50%' : '15%') : '100%' }"></div>
-</div>
-
-<ul class="suggestions">
-<li>Open window for better air circulation</li>
-<li>Consider using an air purifier</li>
-<li>Avoid smoking in enclosed space</li>
-<li>Monitor CO levels regularly</li>
-</ul>
-
-</div>
-
-</div>
-
-</div>
-
 </template>
 
 <script>
@@ -57,62 +45,144 @@ export default {
   props: {
     healthRisk: { type: Object, default: null },
     trendsData: { type: Object, default: null }
+  },
+  computed: {
+    healthProgress() {
+      if (!this.healthRisk) return '100%';
+      if (this.healthRisk.status === 'SAFE') return '100%';
+      if (this.healthRisk.status === 'MODERATE') return '60%';
+      return '25%';
+    },
+    getSummaryText() {
+      if (this.healthRisk.status === 'SAFE') return 'Environment is optimal for health.';
+      if (this.healthRisk.status === 'MODERATE') return 'Slight pollution. Ventilate soon.';
+      return 'DANGER! High toxins. Evacuate!';
+    }
   }
 }
 </script>
 
-<style>
-
-.health-card{
-background:#f5f5f5;
-padding:25px;
-border-radius:15px;
-margin-top:30px;
+<style scoped>
+.health-card {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.health-grid{
-display:grid;
-grid-template-columns:1fr 2fr;
-gap:20px;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.people-card{
-background:white;
-padding:20px;
-border-radius:10px;
-text-align:center;
+h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #334155;
 }
 
-.people-chart{
-font-size:40px;
-color:#ff4081;
+.risk-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-.health-info p{
-margin-bottom:10px;
+.health-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  flex: 1;
 }
 
-.health-bar{
-height:15px;
-background:#ddd;
-border-radius:10px;
-margin:10px 0;
+.status-box {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.health-fill{
-height:15px;
-width:65%;
-background:linear-gradient(to right,green,orange);
-border-radius:10px;
+.status-text {
+  font-size: 1.4rem;
+  font-weight: 800;
 }
 
-.health-score{
-font-weight:bold;
+.sub-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin: 5px 0 0 0;
+  text-transform: uppercase;
 }
 
-.suggestions{
-margin-top:10px;
-font-size:14px;
+.health-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
+.summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 10px 0;
+}
+
+.health-bar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.health-fill {
+  height: 100%;
+  transition: width 1s ease;
+}
+
+.action-plan {
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.plan-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  margin: 0 0 5px 0;
+  text-transform: uppercase;
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.suggestions li {
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.suggestions li::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: 900;
+}
 </style>

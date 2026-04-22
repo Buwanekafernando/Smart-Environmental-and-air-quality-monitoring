@@ -1,7 +1,12 @@
 <template>
-  <div class="air-card">
-    <div class="chart-section">
-      <h2>💧 Humidity Trend</h2>
+  <div class="humidity-card">
+    <div class="card-header">
+      <h2>💧 Humidity</h2>
+      <div class="current-val" v-if="humidityTrend.length > 0">
+        {{ humidityTrend[humidityTrend.length - 1] }}%
+      </div>
+    </div>
+    <div class="chart-container">
       <Line :data="computedChartData" :options="chartOptions"/>
     </div>
   </div>
@@ -20,15 +25,7 @@ import {
   Filler
 } from "chart.js"
 
-ChartJS.register(
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-  Filler
-)
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend, Filler)
 
 export default {
   name: "HumidityChart",
@@ -44,30 +41,42 @@ export default {
         datasets: [{
           label: "Humidity (%)",
           data: [],
-          borderColor: "#0ea5e9", // Light blue
-          pointRadius: 3,
+          borderColor: "#0ea5e9",
+          borderWidth: 3,
+          pointRadius: 0,
+          pointHoverRadius: 4,
           tension: 0.4,
           fill: true,
           backgroundColor: (context) => {
-            const chart = context.chart
-            const { ctx, chartArea } = chart
-            if (!chartArea) return null
-            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-            gradient.addColorStop(0, "rgba(14, 165, 233, 0.5)")
-            gradient.addColorStop(1, "rgba(14, 165, 233, 0.0)")
-            return gradient
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return null;
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, "rgba(14, 165, 233, 0.2)");
+            gradient.addColorStop(1, "rgba(14, 165, 233, 0)");
+            return gradient;
           }
         }]
       },
       chartOptions: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { display: false }
         },
         scales: {
           y: {
             min: 0,
-            max: 100
+            max: 100,
+            grid: { color: "#f1f5f9" },
+            ticks: { 
+              font: { size: 10, weight: '600' },
+              color: '#94a3b8',
+              callback: (value) => value + '%'
+            }
+          },
+          x: {
+            display: false
           }
         }
       }
@@ -88,13 +97,37 @@ export default {
 </script>
 
 <style scoped>
-.air-card {
+.humidity-card {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  height: 100%;
   display: flex;
-  background: #f3f3f3;
-  padding: 30px;
-  border-radius: 15px;
+  flex-direction: column;
 }
-.chart-section {
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #334155;
+}
+
+.current-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0ea5e9;
+}
+
+.chart-container {
   flex: 1;
+  min-height: 0;
 }
 </style>

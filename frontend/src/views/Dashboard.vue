@@ -177,52 +177,59 @@ export default {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: #f0f4f8;
+  background: #f8fafc; /* Lighter, cleaner background */
 }
 
 .sidebar {
-  width: 60px;
+  width: 70px; /* Slightly wider sidebar */
   background: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0;
-  border-right: 1px solid #e1e8ed;
+  padding: 25px 0;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.02);
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 28px;
   margin-bottom: 40px;
 }
 
 .nav-icons {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
 }
 
 .nav-item {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 20px;
-  transition: all 0.2s;
+  font-size: 22px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-item:hover, .nav-item.active {
-  background: #eef2f6;
-  color: #2b5cff;
+.nav-item:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.nav-item.active {
+  background: #2b5cff;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(43, 92, 255, 0.3);
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 15px;
+  padding: 15px 20px;
   overflow: hidden;
 }
 
@@ -230,31 +237,37 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #1a202c;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .dashboard-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 2fr 1.5fr 1fr;
-  gap: 10px;
-  min-height: 0; /* Important for grid items to shrink */
+  grid-template-rows: 2.8fr 2.2fr 1.5fr; /* Adjusted for better chart space */
+  gap: 15px;
+  min-height: 0;
 }
 
 .grid-item {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 16px; /* Rounder corners for premium look */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s;
+}
+
+.grid-item:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
 /* Section Specific Grid Placement */
@@ -289,5 +302,4 @@ export default {
 @media (max-width: 1200px) {
   /* We maintain the grid but maybe simplify if needed */
 }
-</sty</style>
-le>
+</style>
