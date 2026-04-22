@@ -13,11 +13,14 @@ body{
 background:#dce7f5;
 margin:0;
 font-family:Arial, Helvetica, sans-serif;
+overflow: hidden;
 }
 
 #app{
 background:#dce7f5;
-min-height:100vh;
+height: 100vh;
+width: 100vw;
+overflow: hidden;
 }
 
 </style>

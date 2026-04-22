@@ -2,59 +2,63 @@
 <div class="dashboard-wrapper">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <h2>🧪 LabDash</h2>
-    <div class="nav-item" :class="{active: activeTab==='overview'}" @click="scrollTo('overview')">Overview</div>
-    <div class="nav-item" :class="{active: activeTab==='air-quality'}" @click="scrollTo('air-quality')">Air Quality</div>
-    <div class="nav-item" :class="{active: activeTab==='co-monitoring'}" @click="scrollTo('co-monitoring')">CO & Temp</div>
-    <div class="nav-item" :class="{active: activeTab==='health'}" @click="scrollTo('health')">Room Health</div>
-    <div class="nav-item" :class="{active: activeTab==='pollution'}" @click="scrollTo('pollution')">Reports & Cost</div>
-    <div class="nav-item" :class="{active: activeTab==='ir'}" @click="scrollTo('ir')">IR Detection</div>
+    <div class="logo">🧪</div>
+    <div class="nav-icons">
+      <div class="nav-item" :class="{active: activeTab==='overview'}" @click="scrollTo('overview')" title="Overview">📊</div>
+      <div class="nav-item" :class="{active: activeTab==='air-quality'}" @click="scrollTo('air-quality')" title="Air Quality">🌬</div>
+      <div class="nav-item" :class="{active: activeTab==='co-monitoring'}" @click="scrollTo('co-monitoring')" title="CO & Temp">🌡</div>
+      <div class="nav-item" :class="{active: activeTab==='health'}" @click="scrollTo('health')" title="Room Health">🏥</div>
+      <div class="nav-item" :class="{active: activeTab==='pollution'}" @click="scrollTo('pollution')" title="Reports">📄</div>
+    </div>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="header" id="overview">
+    <header class="header">
       <h1>Intelligent Environment Monitoring</h1>
-    </div>
+      <SmokeAlert :coAnalysis="coAnalysis"/>
+    </header>
 
-    <!-- Alert Override (Global) -->
-    <SmokeAlert :coAnalysis="coAnalysis"/>
-
-    <!-- Top Section -->
-    <div class="grid-top" id="air-quality">
-      <div class="chart-card">
+    <div class="dashboard-grid">
+      <!-- Top Left: Large Chart -->
+      <div class="grid-item aqi-section">
         <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels" :trendsData="trendsData"/>
       </div>
-    </div>
 
-    <!-- Sensors -->
-    <div class="grid-two" id="co-monitoring">
-      <TemperatureCard :temperature="latestTemperature"/>
-      <COGauge :coLevel="latestCO" :coAnalysis="coAnalysis"/>
-    </div>
+      <!-- Top Right: Temp -->
+      <div class="grid-item temp-section">
+        <TemperatureCard :temperature="latestTemperature"/>
+      </div>
 
-    <!-- Health Insights -->
-    <div id="health">
-      <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
-    </div>
+      <!-- Middle Left: Health -->
+      <div class="grid-item health-section">
+        <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
+      </div>
 
-    <!-- Humidity & Cost -->
-    <div class="grid-two" id="pollution">
-      <div class="chart-card">
+      <!-- Middle Right: CO -->
+      <div class="grid-item co-section">
+        <COGauge :coLevel="latestCO" :coAnalysis="coAnalysis"/>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="grid-item humidity-section">
         <HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
       </div>
-      <CostPollution :cost="estimatedCost"/>
-    </div>
 
-    <!-- Smoking Status -->
-    <div id="ir">
-      <SmokingStatus :motion="latestMotion"/>
+      <div class="grid-item smoke-status-section">
+        <SmokingStatus :motion="latestMotion"/>
+      </div>
+
+      <div class="grid-item cost-section">
+        <CostPollution :cost="estimatedCost"/>
+      </div>
     </div>
     
     <ChatBot/>
   </main>
 </div>
 </template>
+
 <script>
 import SmokeAlert from "..\\components\\SmokeAlert.vue"
 import AirQualityChart from "..\\components\\AirQualityChart.vue"
@@ -97,7 +101,6 @@ export default {
       return this.latestRecord ? this.latestRecord.temperature : 0;
     },
     latestCO() {
-      // Scale CO raw value to percentage for gauge (0-100)
       if (!this.latestRecord) return 0;
       let rawCO = this.latestRecord.co_level;
       return Math.min(Math.round(rawCO), 100);
@@ -110,24 +113,13 @@ export default {
       let score = Math.floor(this.latestRecord.air_quality);
       
       let label = "Good";
-      let color = "#22c55e"; // green
+      let color = "#22c55e"; 
       
-      if (score > 300) {
-        label = "Hazardous";
-        color = "#7f1d1d"; // dark red
-      } else if (score > 200) {
-        label = "Very Unhealthy";
-        color = "#991b1b"; // red
-      } else if (score > 150) {
-        label = "Unhealthy";
-        color = "#ef4444"; // light red
-      } else if (score > 100) {
-        label = "Unhealthy for Sensitive Grps";
-        color = "#f97316"; // orange
-      } else if (score > 50) {
-        label = "Moderate";
-        color = "#eab308"; // yellow
-      }
+      if (score > 300) { label = "Hazardous"; color = "#7f1d1d"; }
+      else if (score > 200) { label = "Very Unhealthy"; color = "#991b1b"; }
+      else if (score > 150) { label = "Unhealthy"; color = "#ef4444"; }
+      else if (score > 100) { label = "Unhealthy for Sensitive Grps"; color = "#f97316"; }
+      else if (score > 50) { label = "Moderate"; color = "#eab308"; }
       return { score, label, color };
     },
     aqiTrend() {
@@ -138,8 +130,8 @@ export default {
     },
     timeLabels() {
       return [...this.sensorData].reverse().map(d => {
-        let date = new Date(d.timestamp * 1000); // Assuming seconds from python time.time()
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        let date = new Date(d.timestamp * 1000); 
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       });
     },
     estimatedCost() {
@@ -152,16 +144,12 @@ export default {
   },
   mounted() {
     this.fetchData();
-    setInterval(this.fetchData, 3000); // every 3 sec
+    setInterval(this.fetchData, 3000);
   },
   methods: {
     scrollTo(id) {
       this.activeTab = id;
-      const el = document.getElementById(id);
-      const contentPane = document.querySelector('.main-content');
-      if(el && contentPane) {
-        contentPane.scrollTo({ top: el.offsetTop - 30, behavior: 'smooth' });
-      }
+      // Scroller logic removed since we don't want scrolling
     },
     async fetchData() {
       try {
@@ -183,44 +171,46 @@ export default {
 }
 </script>
 
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background:#f4f7fb;
-}
-
+<style scoped>
 .dashboard-wrapper {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: #f0f4f8;
 }
 
 .sidebar {
-  width: 250px;
-  background: white;
-  padding: 30px 20px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  width: 60px;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  padding: 20px 0;
+  border-right: 1px solid #e1e8ed;
 }
 
-.sidebar h2 {
-  margin-bottom: 20px;
-  color: #333;
+.logo {
+  font-size: 24px;
+  margin-bottom: 40px;
+}
+
+.nav-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .nav-item {
-  padding: 12px 15px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
   cursor: pointer;
-  color: #555;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 20px;
+  transition: all 0.2s;
 }
 
 .nav-item:hover, .nav-item.active {
@@ -230,70 +220,74 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 30px 40px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 15px;
+  overflow: hidden;
 }
 
 .header {
-  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .header h1 {
   margin: 0;
-  color: #222;
-  font-size: 28px;
+  font-size: 1.2rem;
+  color: #1a202c;
 }
 
-.cards {
+.dashboard-grid {
+  flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 2fr 1.5fr 1fr;
+  gap: 10px;
+  min-height: 0; /* Important for grid items to shrink */
 }
 
-.card {
+.grid-item {
   background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.grid-top {
-  margin-bottom: 25px;
+/* Section Specific Grid Placement */
+.aqi-section {
+  grid-column: span 2;
 }
 
-.grid-two {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
-  margin-bottom: 25px;
-  margin-top: 25px;
+.temp-section {
+  grid-column: 3;
 }
 
-.chart-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-  padding: 20px;
-  margin-bottom: 25px;
+.health-section {
+  grid-column: span 2;
 }
 
-@media (max-width: 900px) {
-  .dashboard-wrapper {
-    flex-direction: column;
-  }
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 15px;
-  }
-  .grid-two {
-    grid-template-columns: 1fr;
-  }
+.co-section {
+  grid-column: 3;
 }
 
-.gauge-container {
-  width: 200px;
-  margin: auto;
+.humidity-section {
+  /* Bottom row */
 }
-</style>
+
+.smoke-status-section {
+  /* Bottom row */
+}
+
+.cost-section {
+  /* Bottom row */
+}
+
+@media (max-width: 1200px) {
+  /* We maintain the grid but maybe simplify if needed */
+}
+</sty</style>
+le>
