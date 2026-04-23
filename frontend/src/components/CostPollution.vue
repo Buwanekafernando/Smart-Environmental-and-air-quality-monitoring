@@ -1,12 +1,12 @@
 <template>
 <div class="cost-card">
   <div class="header-info">
-    <span class="label">Estimated Target Cost</span>
+    <span class="label">Real-time Impact Cost</span>
   </div>
   <div class="cost-body">
     <div class="amount">
       <span class="currency">Rs.</span>
-      <span class="value">{{ cost.toFixed(0) }}</span>
+      <span class="value">{{ cost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) }}</span>
     </div>
     <button @click="downloadPDF" class="print-btn">
       <span>📄 Report</span>
