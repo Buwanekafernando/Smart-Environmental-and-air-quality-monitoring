@@ -26,8 +26,8 @@
       <div v-if="isFireAlert" class="fire-overlay">
         <div class="fire-content">
           <div class="fire-icon">🔥</div>
-          <h2>EXTREME DANGER DETECTED</h2>
-          <p>Critical CO Spikes + High Temperature + Poor AQI</p>
+          <h2>{{ fireAlert ? fireAlert.level : 'EXTREME DANGER DETECTED' }}</h2>
+          <p>{{ fireAlert ? fireAlert.message : 'Critical CO Spikes + High Temperature + Poor AQI' }}</p>
           <div class="fire-metrics">
             <span>TEMP: {{ latestTemperature }}°C</span>
             <span>CO: {{ latestCO }}%</span>
@@ -73,21 +73,19 @@
       </div>
     </div>
     
-    <ChatBot/>
   </main>
 </div>
 </template>
 
 <script>
-import SmokeAlert from "..\\components\\SmokeAlert.vue"
-import AirQualityChart from "..\\components\\AirQualityChart.vue"
+import SmokeAlert from "../components/SmokeAlert.vue"
+import AirQualityChart from "../components/AirQualityChart.vue"
 import HumidityChart from "../components/HumidityChart.vue"
 import TemperatureCard from "../components/TemperatureCard.vue"
 import COGauge from "../components/COGauge.vue"
 import HealthInsights from "../components/HealthInsights.vue"
 import SmokingStatus from "../components/SmokingStatus.vue"
 import CostPollution from "../components/CostPollution.vue"
-import ChatBot from "../components/ChatBot.vue"
 import axios from "axios";
 
 export default {
@@ -101,7 +99,6 @@ export default {
     HealthInsights,
     SmokingStatus,
     CostPollution,
-    ChatBot
   },
   data() {
     return {
@@ -109,10 +106,12 @@ export default {
       trendsData: null,
       healthRisk: null,
       coAnalysis: null,
+      pollutionCost: null,
+      fireAlert: null,
       activeTab: 'overview',
       audioCtx: null,
       oscillator: null,
-      isMuted: false
+      isMuted: false,
     };
   },
   computed: {
@@ -152,20 +151,16 @@ export default {
     },
     timeLabels() {
       return [...this.sensorData].reverse().map(d => {
-        let date = new Date(d.timestamp * 1000); 
+        let date = new Date(d.timestamp);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       });
     },
     estimatedCost() {
-      if (this.sensorData.length === 0) return 0;
-      // Calculate cumulative environmental impact cost based on CO levels
-      let totalCO = this.sensorData.reduce((acc, curr) => acc + curr.co_level, 0);
-      return totalCO * 1.25; // Rs. 1.25 per unit of CO emission recorded
+      return this.pollutionCost ? this.pollutionCost.total_cost : 0;
     },
     isFireAlert() {
-      // Intelligent Fire Detection: CO > 70%, Temp > 40C, AQI > 250
-      return this.latestCO > 70 && this.latestTemperature > 40 && this.aqiData.score > 250 && !this.isMuted;
-    }
+      return this.fireAlert ? (this.fireAlert.alert && !this.isMuted) : false;
+    },
   },
   watch: {
     isFireAlert(val) {
@@ -187,16 +182,20 @@ export default {
     },
     async fetchData() {
       try {
-        const [resData, resTrends, resHealth, resCo] = await Promise.all([
+        const [resData, resTrends, resHealth, resCo, resCost, resFire] = await Promise.all([
           axios.get("http://localhost:5000/api/data"),
           axios.get("http://localhost:5000/api/trends"),
           axios.get("http://localhost:5000/api/health-risk"),
-          axios.get("http://localhost:5000/api/co-analysis")
+          axios.get("http://localhost:5000/api/co-analysis"),
+          axios.get("http://localhost:5000/api/pollution-cost"),
+          axios.get("http://localhost:5000/api/fire-alert")
         ]);
         this.sensorData = resData.data;
         this.trendsData = resTrends.data;
         this.healthRisk = resHealth.data;
         this.coAnalysis = resCo.data;
+        this.pollutionCost = resCost.data;
+        this.fireAlert = resFire.data;
       } catch (error) {
         console.error("Error fetching sensor data:", error);
       }

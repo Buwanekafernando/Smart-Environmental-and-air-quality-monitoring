@@ -4,7 +4,7 @@ import time
 from db import insert_sensor_data
 
 # ── SERIAL CONFIG ─────────────────────────────
-SERIAL_PORT = "COM3"
+SERIAL_PORT = "COM7"
 BAUD_RATE = 115200
 
 def start_serial_reader():
