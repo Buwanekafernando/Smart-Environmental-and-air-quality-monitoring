@@ -2,25 +2,55 @@ import numpy as np
 from datetime import datetime
 
 class MLService:
+
+    # ─────────────────────────────────────────────
+    # 🔁 HELPER: Convert Labels → Numeric Scores
+    # ─────────────────────────────────────────────
+    @staticmethod
+    def map_air_quality(aq):
+        mapping = {
+            "GOOD": 50,
+            "MODERATE": 100,
+            "POOR  !": 180,
+            "DANGER !!": 250
+        }
+        return mapping.get(aq, 0)
+
+    @staticmethod
+    def map_co_level(co):
+        mapping = {
+            "SAFE": 10,
+            "LOW CO": 30,
+            "HIGH CO  !": 70,
+            "DANGER CO !!": 120
+        }
+        return mapping.get(co, 0)
+
+    # ─────────────────────────────────────────────
+    # 📊 TREND ANALYSIS (FIXED)
+    # ─────────────────────────────────────────────
     @staticmethod
     def analyze_trends(history_data):
-        # history_data: List of dicts latest to oldest
         if len(history_data) < 5:
             return {"trend": "Stable", "forecast": "Not enough data"}
-        
-        # Calculate Simple Moving Average of AQI
-        aqi_values = [d['air_quality'] for d in history_data]
+
+        aqi_values = [MLService.map_air_quality(d['air_quality']) for d in history_data]
+
         sma_short = np.mean(aqi_values[:3])
         sma_long = np.mean(aqi_values[:min(len(aqi_values), 10)])
-        
+
         trend = "Stable"
-        if sma_short > sma_long + 5:
+        if sma_short > sma_long + 10:
             trend = "Increasing"
-        elif sma_short < sma_long - 5:
+        elif sma_short < sma_long - 10:
             trend = "Decreasing"
-            
-        forecast = "Improving" if trend == "Decreasing" else "Worsening" if trend == "Increasing" else "Stable"
-        
+
+        forecast = (
+            "Improving" if trend == "Decreasing"
+            else "Worsening" if trend == "Increasing"
+            else "Stable"
+        )
+
         return {
             "trend": trend,
             "forecast": forecast,
@@ -28,52 +58,137 @@ class MLService:
             "sma_long": round(sma_long, 2)
         }
 
+    # ─────────────────────────────────────────────
+    # 🚬 SMOKING DETECTION (FIXED)
+    # ─────────────────────────────────────────────
     @staticmethod
     def detect_smoking(recent_data):
-        # Look for sudden spikes in CO
         if len(recent_data) < 2:
             return {"smoking_detected": False, "confidence": 0}
-            
-        co_levels = [d.get('co_level', 0) for d in recent_data][:5] # latest 5
+
+        co_levels = [MLService.map_co_level(d.get('co_level', "")) for d in recent_data[:5]]
+
         max_co = max(co_levels)
         min_co = min(co_levels[1:]) if len(co_levels) > 1 else max_co
-        
-        # Spike detecting logic
-        if max_co - min_co > 20 and max_co > 40:
-            return {"smoking_detected": True, "confidence": 0.85}
-            
+
+        if max_co - min_co > 30 and max_co > 60:
+            return {"smoking_detected": True, "confidence": 0.9}
+
         return {"smoking_detected": False, "confidence": 0.0}
 
+    # ─────────────────────────────────────────────
+    # ❤️ HEALTH RISK (FIXED)
+    # ─────────────────────────────────────────────
     @staticmethod
     def classify_health_risk(current_data):
-        aqi = current_data.get('air_quality', 0)
-        co = current_data.get('co_level', 0)
-        
-        if aqi > 150 or co > 50:
+        aqi = MLService.map_air_quality(current_data.get('air_quality', ""))
+        co = MLService.map_co_level(current_data.get('co_level', ""))
+
+        if aqi > 200 or co > 100:
             return {"status": "UNSAFE", "color": "red"}
-        elif aqi > 50 or co > 20:
+        elif aqi > 100 or co > 40:
             return {"status": "MODERATE", "color": "yellow"}
         else:
             return {"status": "SAFE", "color": "green"}
 
+    # ─────────────────────────────────────────────
+    # 💰 NEW: POLLUTION COST MODEL
+    # ─────────────────────────────────────────────
+    @staticmethod
+    def calculate_pollution_cost(history_data):
+        """
+        Converts CO levels into environmental cost
+        """
+
+        if not history_data:
+            return {"total_cost": 0, "avg_cost": 0}
+
+        total_emission = 0
+
+        for d in history_data:
+            co_val = MLService.map_co_level(d.get("co_level", ""))
+            total_emission += co_val
+
+        # 💡 Cost model (you can tune this)
+        COST_PER_UNIT = 0.05   # e.g., $0.05 per emission unit
+
+        total_cost = total_emission * COST_PER_UNIT
+        avg_cost = total_cost / len(history_data)
+
+        return {
+            "total_emission": round(total_emission, 2),
+            "total_cost": round(total_cost, 2),
+            "avg_cost": round(avg_cost, 2)
+        }
+
+    # ─────────────────────────────────────────────
+    # 🔥 NEW: FIRE DETECTION ALERT SYSTEM
+    # ─────────────────────────────────────────────
+    @staticmethod
+    def detect_fire_risk(current_data):
+        temp = current_data.get("temperature", 0)
+        aq = current_data.get("air_quality", "")
+        co = current_data.get("co_level", "")
+
+        is_high_temp = temp >= 40
+        is_bad_air = aq in ["POOR  !", "DANGER !!"]
+        is_high_co = co in ["HIGH CO  !", "DANGER CO !!"]
+
+        if is_high_temp and is_bad_air and is_high_co:
+            return {
+                "alert": True,
+                "level": "CRITICAL",
+                "message": "🔥 FIRE RISK DETECTED! Immediate action required!",
+                "color": "red"
+            }
+
+        elif is_high_co or is_bad_air:
+            return {
+                "alert": True,
+                "level": "WARNING",
+                "message": "⚠️ Pollution levels rising",
+                "color": "orange"
+            }
+
+        return {
+            "alert": False,
+            "level": "SAFE",
+            "message": "Environment is stable",
+            "color": "green"
+        }
+
+    # ─────────────────────────────────────────────
+    # ⏱ PEAK HOURS (FIXED TIMESTAMP)
+    # ─────────────────────────────────────────────
     @staticmethod
     def get_peak_hours(history_data):
-        # group by hour and average AQI
-        # history_data has string or float timestamp
         hourly = {}
+
         for d in history_data:
-            dt = datetime.fromtimestamp(d['timestamp'])
+            ts = d.get("timestamp")
+
+            if isinstance(ts, datetime):
+                dt = ts
+            else:
+                continue
+
             hr = dt.strftime("%H:00")
+
             if hr not in hourly:
                 hourly[hr] = []
-            hourly[hr].append(d['air_quality'])
-            
+
+            hourly[hr].append(MLService.map_air_quality(d['air_quality']))
+
         peak_hr = None
         max_avg = -1
+
         for hr, vals in hourly.items():
-            avg = sum(vals)/len(vals)
+            avg = sum(vals) / len(vals)
             if avg > max_avg:
                 max_avg = avg
                 peak_hr = hr
-                
-        return {"peak_hour": peak_hr, "peak_avg_aqi": round(max_avg, 2)}
+
+        return {
+            "peak_hour": peak_hr,
+            "peak_avg_aqi": round(max_avg, 2)
+        }
