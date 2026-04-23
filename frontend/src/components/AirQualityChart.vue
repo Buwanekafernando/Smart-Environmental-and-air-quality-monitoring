@@ -2,7 +2,7 @@
 <div class="air-card">
   <div class="chart-section full-width">
     <div class="chart-header">
-      <h2>🌬 Air Quality Index</h2>
+      <h2>🌬 Air Quality</h2>
       <div class="aqi-badge" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#888' }">
         {{ currentAqi && currentAqi.label ? currentAqi.label : 'Loading...' }}
       </div>

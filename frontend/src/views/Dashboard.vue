@@ -58,38 +58,15 @@
         <CostPollution :cost="estimatedCost"/>
       </div>
 
-      <!-- Row 4: Detailed Trends -->
-      <div class="grid-item trend-card glass">
-        <h3>📈 AQI Trend</h3>
-        <div class="mini-chart">
-          <Line :data="aqiChartData" :options="miniChartOptions" />
-        </div>
-      </div>
+      
 
-      <div class="grid-item trend-card glass">
-        <h3>📉 CO Trend</h3>
-        <div class="mini-chart">
-          <Line :data="coChartData" :options="miniChartOptions" />
-        </div>
-      </div>
 
-      <div class="grid-item trend-card glass">
-        <h3>💰 Cost Trend</h3>
-        <div class="mini-chart">
-          <Line :data="costChartData" :options="miniChartOptions" />
-        </div>
-      </div>
+      
+      
     </div>
     
-    <!-- Row 4: Detailed Trends (Reports Section) -->
-    <div class="reports-section-wrapper glass" id="pollution">
-      <ReportsSection 
-        :labels="timeLabels" 
-        :aqiTrend="aqiTrend" 
-        :coTrend="coTrend" 
-        :costTrend="costTrend"
-      />
-    </div>
+   
+  
     
   </main>
 </div>

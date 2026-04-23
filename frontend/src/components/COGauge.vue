@@ -12,7 +12,7 @@
       <canvas ref="gaugeCanvas"></canvas>
     </div>
     <div class="value-display">
-      <span class="value">{{coLevel}}</span>
+      <span class="value">{{ coLevel.toFixed(1) }}</span>
       <span class="unit">%</span>
     </div>
   </div>
@@ -43,14 +43,16 @@ export default {
   },
   computed: {
     statusText() {
-      if(this.coLevel < 40) return "Healthy"
-      if(this.coLevel < 70) return "Warning"
-      return "Danger"
+      if(this.coLevel < 25) return "Safe"
+      if(this.coLevel < 50) return "Fair"
+      if(this.coLevel < 75) return "Bad"
+      return "Hazards"
     },
     statusClass() {
-      if(this.coLevel < 40) return "low"
-      if(this.coLevel < 70) return "medium"
-      return "high"
+      if(this.coLevel < 25) return "safe"
+      if(this.coLevel < 50) return "fair"
+      if(this.coLevel < 75) return "bad"
+      return "hazards"
     }
   },
   mounted() {
@@ -93,8 +95,8 @@ export default {
         type: "doughnut",
         data: {
           datasets: [{
-            data: [40, 30, 30],
-            backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+            data: [25, 25, 25, 25],
+            backgroundColor: ["#10b981", "#f59e0b", "#f97316", "#ef4444"],
             borderWidth: 0,
             needleValue: this.coLevel
           }]
@@ -191,7 +193,8 @@ h3 {
   margin: 0;
 }
 
-.low { background: #10b981; }
-.medium { background: #f59e0b; }
-.high { background: #ef4444; }
+.safe { background: #10b981; }
+.fair { background: #f59e0b; }
+.bad { background: #f97316; }
+.hazards { background: #ef4444; }
 </style>

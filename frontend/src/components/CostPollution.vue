@@ -8,9 +8,6 @@
       <span class="currency">Rs.</span>
       <span class="value">{{ cost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) }}</span>
     </div>
-    <button @click="downloadPDF" class="print-btn">
-      <span>📄 Report</span>
-    </button>
   </div>
 </div>
 </template>
