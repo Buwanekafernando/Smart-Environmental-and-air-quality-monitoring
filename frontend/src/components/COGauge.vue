@@ -63,20 +63,25 @@ export default {
         id: "needle",
         afterDatasetDraw(chart) {
           const { ctx } = chart
-          const needleValue = chart.config.data.datasets[0].needleValue
-          const angle = Math.PI + (needleValue / 100) * Math.PI
+          const needleValue = chart.config.data.datasets[0].needleValue || 0
+          const clampedValue = Math.min(Math.max(needleValue, 0), 100)
+          const angle = Math.PI + (clampedValue / 100) * Math.PI
+          
           const cx = chart.getDatasetMeta(0).data[0].x
           const cy = chart.getDatasetMeta(0).data[0].y
+          const outerRadius = chart.getDatasetMeta(0).data[0].outerRadius
+          
           ctx.save()
           ctx.translate(cx, cy)
           ctx.rotate(angle)
           ctx.beginPath()
           ctx.moveTo(0, -2)
-          ctx.lineTo(65, 0) // Adjusted needle length
+          ctx.lineTo(outerRadius - 10, 0) 
           ctx.lineTo(0, 2)
           ctx.fillStyle = "#1e293b"
           ctx.fill()
           ctx.restore()
+          
           ctx.beginPath()
           ctx.arc(cx, cy, 6, 0, 2 * Math.PI)
           ctx.fillStyle = "#1e293b"

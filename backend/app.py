@@ -18,6 +18,14 @@ def get_history_data(limit=20):
     data = get_latest_data(limit)
     for d in data:
         d["_id"] = str(d["_id"])
+        
+        # ✅ Add numeric conversion layer
+        raw_mq135 = d.get("mq135", 0)
+        raw_mq7 = d.get("mq7", 0)
+        
+        d["aqi_numeric"] = MLService.calculate_aqi(raw_mq135)
+        d["co_percent"] = MLService.calculate_co_percent(raw_mq7)
+        
     return data
 
 
@@ -26,6 +34,12 @@ def get_history_data(limit=20):
 @app.route("/api/data", methods=["GET"])
 def get_data():
     return jsonify(get_history_data(20))
+
+
+@app.route("/api/data/latest", methods=["GET"])
+def get_latest():
+    latest = get_history_data(1)
+    return jsonify(latest[0] if latest else {})
 
 
 @app.route("/api/trends", methods=["GET"])

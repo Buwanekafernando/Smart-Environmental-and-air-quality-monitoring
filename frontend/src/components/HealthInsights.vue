@@ -29,10 +29,7 @@
       <div class="action-plan">
         <p class="plan-title">Action Plan:</p>
         <ul class="suggestions">
-          <li>Open window</li>
-          <li>Purifier ON</li>
-          <li>No smoking</li>
-          <li>Check CO</li>
+          <li v-for="suggestion in dynamicSuggestions" :key="suggestion">{{ suggestion }}</li>
         </ul>
       </div>
     </div>
@@ -54,9 +51,21 @@ export default {
       return '25%';
     },
     getSummaryText() {
+      if (!this.healthRisk) return 'Waiting for data...';
       if (this.healthRisk.status === 'SAFE') return 'Environment is optimal for health.';
-      if (this.healthRisk.status === 'MODERATE') return 'Slight pollution. Ventilate soon.';
-      return 'DANGER! High toxins. Evacuate!';
+      if (this.healthRisk.status === 'MODERATE') return 'Slight pollution detected. Improving ventilation is recommended.';
+      return 'CRITICAL! High toxin levels detected. Evacuate or ventilate immediately!';
+    },
+    dynamicSuggestions() {
+      if (!this.healthRisk) return ['Loading...'];
+      
+      if (this.healthRisk.status === 'SAFE') {
+        return ['Maintain cleanliness', 'Normal ventilation', 'System monitoring', 'Safe environment'];
+      } else if (this.healthRisk.status === 'MODERATE') {
+        return ['Open windows', 'Air purifier ON', 'Check air flow', 'Limit activity'];
+      } else {
+        return ['IMMEDIATE VENTILATION', 'EVACUATE IF NECESSARY', 'Check CO sources', 'High-speed filtration'];
+      }
     }
   }
 }

@@ -8,7 +8,7 @@
 #define PIR_PIN     14
 
 #define DHT_TYPE    DHT11
-#define INTERVAL    3000  // ms between readings
+#define INTERVAL    1000  // ms between readings
 #define WARMUP_SEC   90   // MQ warmup time in seconds
 #define ADC_SAMPLES   5   // samples averaged per ADC read
 

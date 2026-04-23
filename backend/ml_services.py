@@ -27,6 +27,39 @@ class MLService:
         return mapping.get(co, 0)
 
     # ─────────────────────────────────────────────
+    # 📏 NUMERIC CONVERSIONS (ADC → SCALE)
+    # ─────────────────────────────────────────────
+    @staticmethod
+    def calculate_aqi(mq135_raw):
+        """
+        Maps MQ135 raw ADC (0-4095) to AQI (0-500)
+        Based on Arduino thresholds: 800, 1500, 2500
+        """
+        try:
+            raw = float(mq135_raw)
+            if raw < 800:
+                return round((raw / 800) * 50)
+            elif raw < 1500:
+                return round(50 + ((raw - 800) / 700) * 50)
+            elif raw < 2500:
+                return round(100 + ((raw - 1500) / 1000) * 100)
+            else:
+                return round(200 + ((raw - 2500) / 1595) * 300)
+        except:
+            return 0
+
+    @staticmethod
+    def calculate_co_percent(mq7_raw):
+        """
+        Maps MQ7 raw ADC (0-4095) to CO % (0-100)
+        """
+        try:
+            raw = float(mq7_raw)
+            return round((raw / 4095) * 100, 1)
+        except:
+            return 0
+
+    # ─────────────────────────────────────────────
     # 📊 TREND ANALYSIS (FIXED)
     # ─────────────────────────────────────────────
     @staticmethod
@@ -34,7 +67,8 @@ class MLService:
         if len(history_data) < 5:
             return {"trend": "Stable", "forecast": "Not enough data"}
 
-        aqi_values = [MLService.map_air_quality(d['air_quality']) for d in history_data]
+        # ✅ Use numeric aqi_numeric for better precision
+        aqi_values = [d.get('aqi_numeric', 0) for d in history_data]
 
         sma_short = np.mean(aqi_values[:3])
         sma_long = np.mean(aqi_values[:min(len(aqi_values), 10)])
@@ -106,7 +140,8 @@ class MLService:
         total_emission = 0
 
         for d in history_data:
-            co_val = MLService.map_co_level(d.get("co_level", ""))
+            # ✅ Use numeric co_percent instead of string mapping
+            co_val = d.get("co_percent", 0)
             total_emission += co_val
 
         # 💡 Cost model (you can tune this)

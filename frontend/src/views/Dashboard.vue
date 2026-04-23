@@ -38,39 +38,69 @@
       </div>
     </transition>
 
-    <div class="dashboard-grid">
-      <!-- Top Left: Large Chart -->
-      <div class="grid-item aqi-section">
+    <div class="dashboard-grid" id="overview">
+      <!-- Row 1: Key Metrics -->
+      <div class="grid-item aqi-section glass" id="air-quality">
         <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels" :trendsData="trendsData"/>
       </div>
 
-      <!-- Top Right: Temp -->
-      <div class="grid-item temp-section">
+      <div class="grid-item temp-section glass">
         <TemperatureCard :temperature="latestTemperature"/>
       </div>
 
-      <!-- Middle Left: Health -->
-      <div class="grid-item health-section">
-        <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
-      </div>
-
-      <!-- Middle Right: CO -->
-      <div class="grid-item co-section">
+      <!-- Row 2: Secondary Metrics -->
+      <div class="grid-item co-section glass" id="co-monitoring">
         <COGauge :coLevel="latestCO" :coAnalysis="coAnalysis"/>
       </div>
 
-      <!-- Bottom Row -->
-      <div class="grid-item humidity-section">
+      <div class="grid-item humidity-section glass">
         <HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
       </div>
 
-      <div class="grid-item smoke-status-section">
+      <div class="grid-item smoke-status-section glass">
         <SmokingStatus :motion="latestMotion"/>
       </div>
 
-      <div class="grid-item cost-section">
+      <!-- Row 3: Insights & Costs -->
+      <div class="grid-item health-section glass" id="health">
+        <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
+      </div>
+
+      <div class="grid-item cost-section glass">
         <CostPollution :cost="estimatedCost"/>
       </div>
+
+      <!-- Row 4: Detailed Trends -->
+      <div class="grid-item trend-card glass">
+        <h3>📈 AQI Trend</h3>
+        <div class="mini-chart">
+          <Line :data="aqiChartData" :options="miniChartOptions" />
+        </div>
+      </div>
+
+      <div class="grid-item trend-card glass">
+        <h3>📉 CO Trend</h3>
+        <div class="mini-chart">
+          <Line :data="coChartData" :options="miniChartOptions" />
+        </div>
+      </div>
+
+      <div class="grid-item trend-card glass">
+        <h3>💰 Cost Trend</h3>
+        <div class="mini-chart">
+          <Line :data="costChartData" :options="miniChartOptions" />
+        </div>
+      </div>
+    </div>
+    
+    <!-- Row 4: Detailed Trends (Reports Section) -->
+    <div class="reports-section-wrapper glass" id="pollution">
+      <ReportsSection 
+        :labels="timeLabels" 
+        :aqiTrend="aqiTrend" 
+        :coTrend="coTrend" 
+        :costTrend="costTrend"
+      />
     </div>
     
   </main>
@@ -86,6 +116,7 @@ import COGauge from "../components/COGauge.vue"
 import HealthInsights from "../components/HealthInsights.vue"
 import SmokingStatus from "../components/SmokingStatus.vue"
 import CostPollution from "../components/CostPollution.vue"
+import ReportsSection from "../components/ReportsSection.vue"
 import axios from "axios";
 
 export default {
@@ -99,6 +130,8 @@ export default {
     HealthInsights,
     SmokingStatus,
     CostPollution,
+    ReportsSection,
+    Line: () => import('vue-chartjs').then(m => m.Line)
   },
   data() {
     return {
@@ -112,6 +145,15 @@ export default {
       audioCtx: null,
       oscillator: null,
       isMuted: false,
+      miniChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { display: false },
+          x: { display: false }
+        }
+      }
     };
   },
   computed: {
@@ -119,35 +161,37 @@ export default {
       return this.sensorData.length > 0 ? this.sensorData[0] : null;
     },
     latestTemperature() {
-      return this.latestRecord ? this.latestRecord.temperature : 0;
+      return this.latestRecord ? parseFloat(this.latestRecord.temperature) || 0 : 0;
     },
     latestCO() {
       if (!this.latestRecord) return 0;
-      let rawCO = this.latestRecord.co_level;
-      return Math.min(Math.round(rawCO), 100);
+      // ✅ Use numeric co_percent from backend conversion layer
+      return parseFloat(this.latestRecord.co_percent) || 0;
     },
     latestMotion() {
-      return this.latestRecord ? this.latestRecord.motion_detected : 0;
+      // ✅ Field name is 'motion' in sensor data
+      return this.latestRecord ? (this.latestRecord.motion === true || this.latestRecord.motion === "true" ? 1 : 0) : 0;
     },
     aqiData() {
       if (!this.latestRecord) return { score: 0, label: "Loading...", color: "#888" };
-      let score = Math.floor(this.latestRecord.air_quality);
+      
+      // ✅ Use numeric aqi_numeric from backend
+      let score = parseInt(this.latestRecord.aqi_numeric) || 0;
       
       let label = "Good";
       let color = "#22c55e"; 
       
-      if (score > 300) { label = "Hazardous"; color = "#7f1d1d"; }
-      else if (score > 200) { label = "Very Unhealthy"; color = "#991b1b"; }
-      else if (score > 150) { label = "Unhealthy"; color = "#ef4444"; }
-      else if (score > 100) { label = "Unhealthy for Sensitive Grps"; color = "#f97316"; }
-      else if (score > 50) { label = "Moderate"; color = "#eab308"; }
+      if (score > 200) { label = "Hazardous"; color = "#7f1d1d"; }
+      else if (score > 100) { label = "Bad"; color = "#ef4444"; }
+      else if (score > 50) { label = "Fair"; color = "#eab308"; }
+      
       return { score, label, color };
     },
     aqiTrend() {
-      return [...this.sensorData].reverse().map(d => Math.floor(d.air_quality));
+      return [...this.sensorData].reverse().map(d => parseInt(d.aqi_numeric) || 0);
     },
     humidityTrend() {
-      return [...this.sensorData].reverse().map(d => d.humidity);
+      return [...this.sensorData].reverse().map(d => parseFloat(d.humidity) || 0);
     },
     timeLabels() {
       return [...this.sensorData].reverse().map(d => {
@@ -157,6 +201,55 @@ export default {
     },
     estimatedCost() {
       return this.pollutionCost ? this.pollutionCost.total_cost : 0;
+    },
+    coTrend() {
+      return [...this.sensorData].reverse().map(d => parseFloat(d.co_percent) || 0);
+    },
+    costTrend() {
+      // For simplicity, we'll map co_percent to a cost factor for the trend chart
+      return [...this.sensorData].reverse().map(d => (parseFloat(d.co_percent) || 0) * 0.5);
+    },
+    aqiChartData() {
+      return {
+        labels: this.timeLabels,
+        datasets: [{
+          data: this.aqiTrend,
+          borderColor: "#2563eb",
+          tension: 0.4,
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: true,
+          backgroundColor: "rgba(37, 99, 235, 0.1)"
+        }]
+      };
+    },
+    coChartData() {
+      return {
+        labels: this.timeLabels,
+        datasets: [{
+          data: this.coTrend,
+          borderColor: "#d97706",
+          tension: 0.4,
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: true,
+          backgroundColor: "rgba(217, 119, 6, 0.1)"
+        }]
+      };
+    },
+    costChartData() {
+      return {
+        labels: this.timeLabels,
+        datasets: [{
+          data: this.costTrend,
+          borderColor: "#059669",
+          tension: 0.4,
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: true,
+          backgroundColor: "rgba(5, 150, 105, 0.1)"
+        }]
+      };
     },
     isFireAlert() {
       return this.fireAlert ? (this.fireAlert.alert && !this.isMuted) : false;
@@ -172,32 +265,59 @@ export default {
     }
   },
   mounted() {
-    this.fetchData();
-    setInterval(this.fetchData, 3000);
+    this.initialLoad();
   },
   methods: {
     scrollTo(id) {
       this.activeTab = id;
-      // Scroller logic removed since we don't want scrolling
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     },
-    async fetchData() {
+    async initialLoad() {
       try {
-        const [resData, resTrends, resHealth, resCo, resCost, resFire] = await Promise.all([
-          axios.get("http://localhost:5000/api/data"),
+        // Initial fetch of historical data
+        const resData = await axios.get("http://localhost:5000/api/data");
+        this.sensorData = resData.data;
+        
+        // Fetch analytical data once
+        await this.fetchUpdates();
+
+        // Start 1s polling
+        setInterval(this.fetchUpdates, 1000);
+      } catch (error) {
+        console.error("Error during initial load:", error);
+      }
+    },
+    async fetchUpdates() {
+      try {
+        const [resLatest, resTrends, resHealth, resCo, resCost, resFire] = await Promise.all([
+          axios.get("http://localhost:5000/api/data/latest"),
           axios.get("http://localhost:5000/api/trends"),
           axios.get("http://localhost:5000/api/health-risk"),
           axios.get("http://localhost:5000/api/co-analysis"),
           axios.get("http://localhost:5000/api/pollution-cost"),
           axios.get("http://localhost:5000/api/fire-alert")
         ]);
-        this.sensorData = resData.data;
+
+        // Prepend latest record if it's new
+        const latest = resLatest.data;
+        if (latest && latest._id && (!this.sensorData.length || latest._id !== this.sensorData[0]._id)) {
+          this.sensorData.unshift(latest);
+          // Keep only last 50 records for performance
+          if (this.sensorData.length > 50) {
+            this.sensorData.pop();
+          }
+        }
+
         this.trendsData = resTrends.data;
         this.healthRisk = resHealth.data;
         this.coAnalysis = resCo.data;
         this.pollutionCost = resCost.data;
         this.fireAlert = resFire.data;
       } catch (error) {
-        console.error("Error fetching sensor data:", error);
+        console.error("Error fetching updates:", error);
       }
     },
     playAlarm() {
@@ -242,6 +362,7 @@ export default {
       this.stopAlarm();
       // Auto-unmute after 30 seconds if conditions persist
       setTimeout(() => { this.isMuted = false; }, 30000);
+    }
   }
 }
 </script>
@@ -387,7 +508,8 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 15px 20px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .header {
@@ -408,28 +530,41 @@ export default {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 2.8fr 2.2fr 1.5fr; /* Adjusted for better chart space */
-  gap: 15px;
-  min-height: 0;
+  grid-template-rows: auto auto auto;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .grid-item {
   background: white;
-  border-radius: 16px; /* Rounder corners for premium look */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .grid-item:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px);
+}
+
+.reports-section-wrapper {
+  margin-top: 10px;
+  border-radius: 24px;
 }
 
 /* Section Specific Grid Placement */
 .aqi-section {
   grid-column: span 2;
+  min-height: 320px;
 }
 
 .temp-section {
@@ -441,22 +576,45 @@ export default {
 }
 
 .co-section {
-  grid-column: 3;
+  grid-column: 1;
 }
 
 .humidity-section {
-  /* Bottom row */
+  grid-column: 2;
 }
 
 .smoke-status-section {
-  /* Bottom row */
+  grid-column: 3;
 }
 
 .cost-section {
-  /* Bottom row */
+  grid-column: 3;
+}
+
+.trend-card {
+  padding: 15px;
+  height: 120px;
+}
+
+.trend-card h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.mini-chart {
+  flex: 1;
+  min-height: 0;
 }
 
 @media (max-width: 1200px) {
-  /* We maintain the grid but maybe simplify if needed */
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .aqi-section, .health-section {
+    grid-column: span 2;
+  }
 }
 </style>

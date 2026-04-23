@@ -1,6 +1,6 @@
 <template>
 <div class="air-card">
-  <div class="chart-section">
+  <div class="chart-section full-width">
     <div class="chart-header">
       <h2>🌬 Air Quality Index</h2>
       <div class="aqi-badge" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#888' }">
@@ -8,32 +8,7 @@
       </div>
     </div>
     <div class="chart-wrapper">
-      <Line :data="computedChartData" :options="chartOptions" />
-    </div>
-  </div>
-  <div class="score-section">
-    <div class="score-container">
-      <h1 :style="{ color: currentAqi ? currentAqi.color : '#000' }">{{ currentAqi ? currentAqi.score : 0 }}</h1>
-      <p>Current AQI</p>
-    </div>
-    <div class="aqi-bar-container">
-      <div class="aqi-bar">
-        <div class="aqi-fill" :style="{ backgroundColor: currentAqi ? currentAqi.color : '#ddd', width: Math.min(((currentAqi ? currentAqi.score : 0) / 5), 100) + '%' }"></div>
-      </div>
-      <div class="aqi-labels">
-        <span>0</span>
-        <span>500</span>
-      </div>
-    </div>
-    <div v-if="trendsData" class="trend-box">
-      <div class="trend-item">
-        <span class="label">Trend:</span>
-        <span class="value">{{ trendsData.trend }}</span>
-      </div>
-      <div class="trend-item">
-        <span class="label">Forecast:</span>
-        <span class="value">{{ trendsData.forecast }}</span>
-      </div>
+      <Line :data="computedChartData" :options="chartOptions" :plugins="visualZonesPlugin" />
     </div>
   </div>
 </div>
@@ -64,30 +39,45 @@ export default {
   },
   data() {
     return {
+      visualZonesPlugin: [{
+        id: 'visualZones',
+        beforeDraw: (chart) => {
+          const { ctx, chartArea, scales: { y } } = chart;
+          if (!chartArea) return;
+
+          const drawZone = (min, max, color) => {
+            const top = y.getPixelForValue(max);
+            const bottom = y.getPixelForValue(min);
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.fillRect(chartArea.left, top, chartArea.width, bottom - top);
+            ctx.restore();
+          };
+
+          // Good (0-50)
+          drawZone(0, 50, 'rgba(34, 197, 94, 0.1)');
+          // Fair (51-100)
+          drawZone(50, 100, 'rgba(234, 179, 8, 0.1)');
+          // Poor (101-500)
+          drawZone(100, 500, 'rgba(239, 68, 68, 0.1)');
+        }
+      }],
       chartData: {
         labels: [],
         datasets: [{
           label: "AQI",
           data: [],
-          borderColor: "#3b82f6",
-          pointRadius: 2,
-          borderWidth: 2,
+          borderColor: "#1e293b",
+          pointRadius: 0,
+          borderWidth: 3,
           tension: 0.4,
-          fill: true,
-          backgroundColor: (context) => {
-            const chart = context.chart;
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return null;
-            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            gradient.addColorStop(0, "rgba(59, 130, 246, 0.2)");
-            gradient.addColorStop(1, "rgba(59, 130, 246, 0)");
-            return gradient;
-          }
+          fill: false
         }]
       },
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 0 }, // Faster updates
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -99,12 +89,12 @@ export default {
           y: {
             min: 0,
             max: 500,
-            grid: { color: "#f1f5f9" },
-            ticks: { font: { size: 10 } }
+            grid: { color: "rgba(0,0,0,0.05)" },
+            ticks: { font: { size: 10, weight: 'bold' } }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10 }, maxRotation: 0 }
+            ticks: { font: { size: 10, weight: 'bold' }, maxRotation: 0 }
           }
         }
       }

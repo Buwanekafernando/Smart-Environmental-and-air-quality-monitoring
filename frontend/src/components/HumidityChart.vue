@@ -76,7 +76,13 @@ export default {
             }
           },
           x: {
-            display: false
+            display: true,
+            grid: { display: false },
+            ticks: { 
+              font: { size: 10, weight: '600' },
+              color: '#94a3b8',
+              maxRotation: 0
+            }
           }
         }
       }
