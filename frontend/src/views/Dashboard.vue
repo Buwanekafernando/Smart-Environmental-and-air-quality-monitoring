@@ -1,17 +1,5 @@
 <template>
 <div class="dashboard-wrapper">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">🧪</div>
-    <div class="nav-icons">
-      <div class="nav-item" :class="{active: activeTab==='overview'}" @click="scrollTo('overview')" title="Overview">📊</div>
-      <div class="nav-item" :class="{active: activeTab==='air-quality'}" @click="scrollTo('air-quality')" title="Air Quality">🌬</div>
-      <div class="nav-item" :class="{active: activeTab==='co-monitoring'}" @click="scrollTo('co-monitoring')" title="CO & Temp">🌡</div>
-      <div class="nav-item" :class="{active: activeTab==='health'}" @click="scrollTo('health')" title="Room Health">🏥</div>
-      <div class="nav-item" :class="{active: activeTab==='pollution'}" @click="scrollTo('pollution')" title="Reports">📄</div>
-    </div>
-  </aside>
-
   <!-- Main Content -->
   <main class="main-content">
     <header class="header">
@@ -141,7 +129,6 @@ export default {
       coAnalysis: null,
       pollutionCost: null,
       fireAlert: null,
-      activeTab: 'overview',
       audioCtx: null,
       oscillator: null,
       isMuted: false,
@@ -268,13 +255,6 @@ export default {
     this.initialLoad();
   },
   methods: {
-    scrollTo(id) {
-      this.activeTab = id;
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    },
     async initialLoad() {
       try {
         // Initial fetch of historical data
@@ -456,51 +436,6 @@ export default {
   width: 100vw;
   overflow: hidden;
   background: #f8fafc;
-}
-
-.sidebar {
-  width: 70px; /* Slightly wider sidebar */
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 25px 0;
-  border-right: 1px solid #e2e8f0;
-  box-shadow: 4px 0 10px rgba(0,0,0,0.02);
-}
-
-.logo {
-  font-size: 28px;
-  margin-bottom: 40px;
-}
-
-.nav-icons {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.nav-item {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 22px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-item:hover {
-  background: #f1f5f9;
-  transform: translateY(-2px);
-}
-
-.nav-item.active {
-  background: #2b5cff;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(43, 92, 255, 0.3);
 }
 
 .main-content {
