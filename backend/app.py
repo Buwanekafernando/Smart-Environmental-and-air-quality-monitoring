@@ -77,6 +77,20 @@ def chatbot():
             "reply": "I am monitoring the environment. Try asking 'Is the air safe?'"
         })
 
+@app.route("/api/pollution-cost", methods=["GET"])
+def get_pollution_cost():
+    history = get_history_data(100)
+    return jsonify(MLService.calculate_pollution_cost(history))
+
+
+@app.route("/api/fire-alert", methods=["GET"])
+def get_fire_alert():
+    latest = get_history_data(1)
+    if not latest:
+        return jsonify({"alert": False})
+
+    return jsonify(MLService.detect_fire_risk(latest[0]))
+
 
 # ── MAIN ─────────────────────────────
 if __name__ == "__main__":
