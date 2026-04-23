@@ -162,18 +162,18 @@ class MLService:
     @staticmethod
     def detect_fire_risk(current_data):
         temp = current_data.get("temperature", 0)
-        aq = current_data.get("air_quality", "")
+        aqi_numeric = current_data.get("aqi_numeric", 0)
         co = current_data.get("co_level", "")
 
-        is_high_temp = temp >= 40
-        is_bad_air = aq in ["POOR  !", "DANGER !!"]
-        is_high_co = co in ["HIGH CO  !", "DANGER CO !!"]
+        is_high_temp = temp > 45
+        is_bad_air = aqi_numeric > 100
+        is_high_co = co == "HIGH CO  !"
 
         if is_high_temp and is_bad_air and is_high_co:
             return {
                 "alert": True,
                 "level": "CRITICAL",
-                "message": "🔥 FIRE RISK DETECTED! Immediate action required!",
+                "message": "🔥 Temperature > 45°C, High CO and bad AQI detected!",
                 "color": "red"
             }
 
