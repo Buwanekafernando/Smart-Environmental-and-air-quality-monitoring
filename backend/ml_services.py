@@ -175,24 +175,27 @@ class MLService:
         aqi_numeric = float(current_data.get("aqi_numeric", 0) or 0)
         co_percent = float(current_data.get("co_percent", 0) or 0)
 
-        # Numeric thresholds (co_percent: 0–100, aqi_numeric: 0–500)
-        is_high_temp = temp > 35          # > 35°C is hot/dangerous indoors
-        is_bad_air = aqi_numeric > 100    # AQI > 100 = Unhealthy
-        is_high_co = co_percent > 40      # > 40% CO sensor reading
+        # Numeric thresholds (user-configured)
+        is_high_co   = co_percent  > 55   # > 55% CO sensor reading
+        is_high_temp = temp        > 40   # > 40°C
+        is_bad_air   = aqi_numeric > 80   # AQI > 80
 
-        if is_high_temp and is_bad_air and is_high_co:
+        # CRITICAL: all three sensors simultaneously breached
+        if is_high_co and is_high_temp and is_bad_air:
             return {
                 "alert": True,
                 "level": "CRITICAL",
-                "message": "🔥 Temperature > 35°C, High CO and bad AQI detected!",
+                "message": "🔥 Critical: CO > 55%, Temp > 40°C and AQI > 80 detected!",
                 "color": "red"
             }
 
-        elif is_high_co or is_bad_air:
+        # WARNING: any two conditions are breached together
+        conditions_met = sum([is_high_co, is_high_temp, is_bad_air])
+        if conditions_met >= 2:
             return {
                 "alert": True,
                 "level": "WARNING",
-                "message": "⚠️ Pollution levels rising",
+                "message": "⚠️ Pollution levels rising — multiple thresholds exceeded",
                 "color": "orange"
             }
 
