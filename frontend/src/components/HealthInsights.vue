@@ -1,9 +1,14 @@
 <template>
 <div class="health-card" :style="{ borderLeft: healthRisk ? '6px solid ' + healthRisk.color : 'none' }">
   <div class="card-header">
-    <h2>🏥 Room Health & Insights</h2>
-    <div v-if="healthRisk" class="risk-label" :style="{ color: healthRisk.color }">
-      {{ healthRisk.status }}
+    <h2>🏥 Room Health & AI Insights</h2>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <div v-if="aiStatus" class="risk-label" :style="{ color: aiStatusColor, background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px' }">
+        AI: {{ aiStatus }}
+      </div>
+      <div v-if="healthRisk" class="risk-label" :style="{ color: healthRisk.color }">
+        {{ healthRisk.status }}
+      </div>
     </div>
   </div>
   
@@ -13,6 +18,11 @@
         <span class="status-text">{{ healthRisk ? healthRisk.status : "..." }}</span>
       </div>
       <p class="sub-label">Current Risk</p>
+
+      <div v-if="aiStatus" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+        <p class="sub-label" style="margin-bottom: 2px;">Predicted AI Quality</p>
+        <span :style="{ color: aiStatusColor, fontWeight: '800', fontSize: '1rem' }">{{ aiStatus }}</span>
+      </div>
     </div>
     
     <div class="health-details">
@@ -41,9 +51,20 @@
 export default {
   props: {
     healthRisk: { type: Object, default: null },
+    aiStatus: { type: String, default: null },
     trendsData: { type: Object, default: null }
   },
   computed: {
+    aiStatusColor() {
+      if (!this.aiStatus) return '#888';
+      switch(this.aiStatus) {
+        case 'Good': return '#10b981'; // green
+        case 'Fair': return '#f59e0b'; // yellow
+        case 'Bad': return '#ef4444'; // red
+        case 'Hazard': return '#7f1d1d'; // dark red
+        default: return '#888';
+      }
+    },
     healthProgress() {
       if (!this.healthRisk) return '100%';
       if (this.healthRisk.status === 'SAFE') return '100%';
@@ -51,10 +72,20 @@ export default {
       return '25%';
     },
     getSummaryText() {
-      if (!this.healthRisk) return 'Waiting for data...';
-      if (this.healthRisk.status === 'SAFE') return 'Environment is optimal for health.';
-      if (this.healthRisk.status === 'MODERATE') return 'Slight pollution detected. Improving ventilation is recommended.';
-      return 'CRITICAL! High toxin levels detected. Evacuate or ventilate immediately!';
+      let baseText = 'Waiting for data...';
+      if (this.healthRisk) {
+        if (this.healthRisk.status === 'SAFE') baseText = 'Environment is optimal for health.';
+        else if (this.healthRisk.status === 'MODERATE') baseText = 'Slight pollution detected. Improving ventilation is recommended.';
+        else baseText = 'CRITICAL! High toxin levels detected. Evacuate or ventilate immediately!';
+      }
+      
+      if (this.aiStatus) {
+         if (this.aiStatus === 'Good') return baseText + ' AI model agrees the air is safe.';
+         if (this.aiStatus === 'Fair') return baseText + ' AI detects some pollutants; monitoring recommended.';
+         if (this.aiStatus === 'Bad') return baseText + ' AI confirms poor air quality.';
+         if (this.aiStatus === 'Hazard') return baseText + ' AI flags this as a HAZARD. Immediate action needed!';
+      }
+      return baseText;
     },
     dynamicSuggestions() {
       if (!this.healthRisk) return ['Loading...'];

@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_socketio import SocketIO
 import threading
 
 from db import get_latest_data
@@ -8,15 +9,16 @@ from ml_services import MLService
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # 🚀 Start serial reader in background
-threading.Thread(target=start_serial_reader, daemon=True).start()
+threading.Thread(target=start_serial_reader, args=(socketio,), daemon=True).start()
 
 
 # ── HELPERS ─────────────────────────────
 def get_history_data(limit=20):
     data = get_latest_data(limit)
-    for d in data:
+    for i, d in enumerate(data):
         d["_id"] = str(d["_id"])
         
         # ✅ Add numeric conversion layer
@@ -25,6 +27,9 @@ def get_history_data(limit=20):
         
         d["aqi_numeric"] = MLService.calculate_aqi(raw_mq135)
         d["co_percent"] = MLService.calculate_co_percent(raw_mq7)
+        
+        if i == 0:
+            d["ai_status"] = MLService.predict_air_quality(raw_mq7, raw_mq135, d.get("temperature", 0), d.get("humidity", 0))
         
     return data
 
@@ -106,16 +111,8 @@ def get_fire_alert():
     return jsonify(MLService.detect_fire_risk(latest[0]))
 
 
-import joblib
-import numpy as np
 
-model = joblib.load("air_quality_model.pkl")
-
-def predict_air_quality(mq7, mq135, temp, humidity):
-    data = np.array([[mq7, mq135, temp, humidity]])
-    prediction = model.predict(data)
-    return prediction[0]
 
 # ── MAIN ─────────────────────────────
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True, port=5000)

@@ -51,7 +51,7 @@
 
       <!-- Row 3: Insights & Costs -->
       <div class="grid-item health-section glass" id="health">
-        <HealthInsights :healthRisk="healthRisk" :trendsData="trendsData"/>
+        <HealthInsights :healthRisk="healthRisk" :aiStatus="aiStatus" :trendsData="trendsData"/>
       </div>
 
       <div class="grid-item cost-section glass">
@@ -82,6 +82,7 @@ import HealthInsights from "../components/HealthInsights.vue"
 import SmokingStatus from "../components/SmokingStatus.vue"
 import CostPollution from "../components/CostPollution.vue"
 import axios from "axios";
+import { io } from "socket.io-client";
 
 export default {
   name: "Dashboard",
@@ -98,6 +99,8 @@ export default {
   },
   data() {
     return {
+      socket: null,
+      aiStatus: null,
       sensorData: [],
       trendsData: null,
       healthRisk: null,
@@ -227,44 +230,52 @@ export default {
     }
   },
   mounted() {
+    this.setupSocket();
     this.initialLoad();
   },
   methods: {
+    setupSocket() {
+      this.socket = io("http://localhost:5000");
+      this.socket.on("sensor_update", (data) => {
+        if (data && (!this.sensorData.length || data._id !== this.sensorData[0]._id)) {
+          this.sensorData.unshift(data);
+          if (this.sensorData.length > 1800) {
+            this.sensorData.pop();
+          }
+        }
+        if (data.ai_status) {
+          this.aiStatus = data.ai_status;
+        }
+      });
+    },
     async initialLoad() {
       try {
         // Initial fetch of historical data
         const resData = await axios.get("http://localhost:5000/api/data");
         this.sensorData = resData.data;
         
+        if (this.sensorData.length && this.sensorData[0].ai_status) {
+          this.aiStatus = this.sensorData[0].ai_status;
+        }
+
         // Fetch analytical data once
         await this.fetchUpdates();
 
-        // Start 1s polling
-        setInterval(this.fetchUpdates, 1000);
+        // Start 5s polling for non-realtime aggregations
+        setInterval(this.fetchUpdates, 5000);
       } catch (error) {
         console.error("Error during initial load:", error);
       }
     },
     async fetchUpdates() {
       try {
-        const [resLatest, resTrends, resHealth, resCo, resCost, resFire] = await Promise.all([
-          axios.get("http://localhost:5000/api/data/latest"),
+        const [resTrends, resHealth, resCo, resCost, resFire] = await Promise.all([
           axios.get("http://localhost:5000/api/trends"),
           axios.get("http://localhost:5000/api/health-risk"),
           axios.get("http://localhost:5000/api/co-analysis"),
           axios.get("http://localhost:5000/api/pollution-cost"),
           axios.get("http://localhost:5000/api/fire-alert")
         ]);
-
-        // Prepend latest record if it's new
-        const latest = resLatest.data;
-        if (latest && latest._id && (!this.sensorData.length || latest._id !== this.sensorData[0]._id)) {
-          this.sensorData.unshift(latest);
-          // Keep only last 1800 records (approx 30 mins @ 1s)
-          if (this.sensorData.length > 1800) {
-            this.sensorData.pop();
-          }
-        }
 
         this.trendsData = resTrends.data;
         this.healthRisk = resHealth.data;

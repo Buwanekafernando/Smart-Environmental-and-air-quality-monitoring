@@ -1,5 +1,15 @@
 import numpy as np
+import pandas as pd
 from datetime import datetime
+import joblib
+import os
+
+# Load model once
+try:
+    rf_model = joblib.load("air_quality_model.pkl")
+except Exception as e:
+    print("Warning: Could not load air_quality_model.pkl:", e)
+    rf_model = None
 
 class MLService:
 
@@ -195,6 +205,24 @@ class MLService:
     # ─────────────────────────────────────────────
     # ⏱ PEAK HOURS (FIXED TIMESTAMP)
     # ─────────────────────────────────────────────
+    @staticmethod
+    def predict_air_quality(mq7, mq135, temp, humidity):
+        if rf_model is None:
+            return "Unknown"
+        try:
+            # Create a DataFrame to provide the valid feature names that the model expects
+            data = pd.DataFrame([{
+                'mq7': float(mq7),
+                'mq135': float(mq135),
+                'temperature': float(temp),
+                'humidity': float(humidity)
+            }])
+            prediction = rf_model.predict(data)
+            return prediction[0]
+        except Exception as e:
+            print("Prediction error:", e)
+            return "Unknown"
+
     @staticmethod
     def get_peak_hours(history_data):
         hourly = {}
