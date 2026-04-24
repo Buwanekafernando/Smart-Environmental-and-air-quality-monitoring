@@ -3,31 +3,41 @@
   <div class="header-info">
     <span class="label">Real-time Impact Cost</span>
   </div>
-  <div class="cost-body">
-    <div class="amount">
-      <span class="currency">Rs.</span>
-      <span class="value">{{ cost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) }}</span>
+  
+  <div class="metrics-grid">
+    <div class="metric highlight">
+      <span class="metric-label">Total Cost</span>
+      <div class="amount">
+        <span class="currency">Rs.</span>
+        <span class="value">{{ (costData?.total_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) }}</span>
+      </div>
+    </div>
+    
+    <div class="metric">
+      <span class="metric-label">Total Emission</span>
+      <div class="amount">
+        <span class="value">{{ (costData?.total_emission || 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
+        <span class="currency ml-1">%</span>
+      </div>
+    </div>
+
+    <div class="metric">
+      <span class="metric-label">Avg Cost</span>
+      <div class="amount">
+        <span class="currency">Rs.</span>
+        <span class="value">{{ (costData?.avg_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
+      </div>
     </div>
   </div>
 </div>
 </template>
 
 <script>
-import jsPDF from "jspdf"
-import html2canvas from "html2canvas"
-
 export default {
   props: {
-    cost: { type: Number, default: 1500 }
-  },
-  methods: {
-    async downloadPDF() {
-      const element = document.body
-      const canvas = await html2canvas(element)
-      const img = canvas.toDataURL("image/png")
-      const pdf = new jsPDF()
-      pdf.addImage(img, "PNG", 10, 10, 190, 0)
-      pdf.save("AirQualityReport.pdf")
+    costData: { 
+      type: Object, 
+      default: () => ({ total_cost: 0, total_emission: 0, avg_cost: 0 }) 
     }
   }
 }
@@ -51,13 +61,40 @@ export default {
   color: #1e40af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin-bottom: 15px;
+  display: block;
 }
 
-.cost-body {
+.metrics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.metric.highlight {
+  background: white;
+  border: 1px solid #93c5fd;
+  padding: 12px;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.metric.highlight .metric-label {
+  color: #1e40af;
+  font-weight: 700;
 }
 
 .amount {
@@ -67,33 +104,27 @@ export default {
 }
 
 .currency {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   margin-right: 4px;
 }
 
+.ml-1 {
+  margin-left: 4px;
+  margin-right: 0;
+}
+
+.metric.highlight .currency {
+  font-size: 1rem;
+}
+
 .value {
-  font-size: 2.2rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1;
 }
 
-.print-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 700;
-  transition: all 0.2s;
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-}
-
-.print-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+.metric.highlight .value {
+  font-size: 1.8rem;
 }
 </style>

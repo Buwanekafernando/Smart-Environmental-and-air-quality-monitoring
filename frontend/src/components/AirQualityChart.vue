@@ -93,25 +93,17 @@ export default {
             ticks: { font: { size: 10, weight: 'bold' } }
           },
           x: {
+            title: {
+              display: true,
+              color: '#94a3b8',
+              font: { size: 10, weight: 'bold' }
+            },
             grid: { display: false },
             ticks: { 
               font: { size: 10, weight: 'bold' }, 
               maxRotation: 0,
               autoSkip: true,
-              maxTicksLimit: 15,
-              callback: function(value, index, ticks) {
-                const label = this.getLabelForValue(value);
-                if (index === 0) return label;
-                const prevLabel = this.getLabelForValue(ticks[index-1].value);
-                
-                // Only show label if minute changes AND it's a multiple of 5
-                if (label !== prevLabel) {
-                   const [time, period] = label.split(' ');
-                   const [hour, minute] = time.split(':');
-                   if (parseInt(minute) % 5 === 0) return label;
-                }
-                return '';
-              }
+              maxTicksLimit: 10
             }
           }
         }

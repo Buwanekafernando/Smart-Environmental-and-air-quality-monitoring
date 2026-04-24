@@ -55,7 +55,7 @@
       </div>
 
       <div class="grid-item cost-section glass">
-        <CostPollution :cost="estimatedCost"/>
+        <CostPollution :costData="pollutionCost"/>
       </div>
 
       
@@ -160,7 +160,7 @@ export default {
     timeLabels() {
       return [...this.sensorData].reverse().map(d => {
         let date = new Date(d.timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       });
     },
     estimatedCost() {
