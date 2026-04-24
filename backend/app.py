@@ -106,6 +106,16 @@ def get_fire_alert():
     return jsonify(MLService.detect_fire_risk(latest[0]))
 
 
+import joblib
+import numpy as np
+
+model = joblib.load("air_quality_model.pkl")
+
+def predict_air_quality(mq7, mq135, temp, humidity):
+    data = np.array([[mq7, mq135, temp, humidity]])
+    prediction = model.predict(data)
+    return prediction[0]
+
 # ── MAIN ─────────────────────────────
 if __name__ == "__main__":
     app.run(debug=True)
