@@ -189,13 +189,13 @@ class MLService:
                 "color": "red"
             }
 
-        # WARNING: any two conditions are breached together
-        conditions_met = sum([is_high_co, is_high_temp, is_bad_air])
-        if conditions_met >= 2:
+        # WARNING: CO + AQI both high — temperature is NOT required
+        # This ensures the alarm fires even when temperature is stable
+        if is_high_co and is_bad_air:
             return {
                 "alert": True,
                 "level": "WARNING",
-                "message": "⚠️ Pollution levels rising — multiple thresholds exceeded",
+                "message": "⚠️ Dangerous air quality: High CO and AQI both elevated!",
                 "color": "orange"
             }
 
