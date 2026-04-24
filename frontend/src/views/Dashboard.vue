@@ -236,13 +236,29 @@ export default {
   methods: {
     setupSocket() {
       this.socket = io("http://localhost:5000");
+
+      this.socket.on("connect", () => {
+        console.log("✅ WebSocket connected");
+      });
+
+      this.socket.on("disconnect", () => {
+        console.warn("⚠️ WebSocket disconnected");
+      });
+
       this.socket.on("sensor_update", (data) => {
-        if (data && (!this.sensorData.length || data._id !== this.sensorData[0]._id)) {
+        if (!data) return;
+
+        // ✅ Fixed dedup: compare by timestamp instead of _id (which may not exist on raw data)
+        const latestTimestamp = this.sensorData.length > 0 ? this.sensorData[0].timestamp : null;
+        const isNewReading = !latestTimestamp || data.timestamp !== latestTimestamp;
+
+        if (isNewReading) {
           this.sensorData.unshift(data);
           if (this.sensorData.length > 1800) {
             this.sensorData.pop();
           }
         }
+
         if (data.ai_status) {
           this.aiStatus = data.ai_status;
         }
@@ -261,10 +277,33 @@ export default {
         // Fetch analytical data once
         await this.fetchUpdates();
 
-        // Start 5s polling for non-realtime aggregations
+        // Poll aggregated analytics every 5s
         setInterval(this.fetchUpdates, 5000);
+
+        // ✅ Fallback: poll latest sensor every 2s to keep live values updating
+        setInterval(this.fetchLatestSensor, 2000);
       } catch (error) {
         console.error("Error during initial load:", error);
+      }
+    },
+    async fetchLatestSensor() {
+      try {
+        const res = await axios.get("http://localhost:5000/api/data/latest");
+        const data = res.data;
+        if (!data || !data.timestamp) return;
+
+        const latestTimestamp = this.sensorData.length > 0 ? this.sensorData[0].timestamp : null;
+        if (data.timestamp !== latestTimestamp) {
+          this.sensorData.unshift(data);
+          if (this.sensorData.length > 1800) {
+            this.sensorData.pop();
+          }
+          if (data.ai_status) {
+            this.aiStatus = data.ai_status;
+          }
+        }
+      } catch (error) {
+        // Silently ignore polling errors to avoid console spam
       }
     },
     async fetchUpdates() {
