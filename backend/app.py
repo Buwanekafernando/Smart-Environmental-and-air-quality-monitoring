@@ -33,7 +33,7 @@ def get_history_data(limit=20):
 
 @app.route("/api/data", methods=["GET"])
 def get_data():
-    return jsonify(get_history_data(20))
+    return jsonify(get_history_data(2000))
 
 
 @app.route("/api/data/latest", methods=["GET"])

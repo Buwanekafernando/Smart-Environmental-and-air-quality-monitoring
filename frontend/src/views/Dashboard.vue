@@ -262,8 +262,8 @@ export default {
         const latest = resLatest.data;
         if (latest && latest._id && (!this.sensorData.length || latest._id !== this.sensorData[0]._id)) {
           this.sensorData.unshift(latest);
-          // Keep only last 50 records for performance
-          if (this.sensorData.length > 50) {
+          // Keep only last 1800 records (approx 30 mins @ 1s)
+          if (this.sensorData.length > 1800) {
             this.sensorData.pop();
           }
         }

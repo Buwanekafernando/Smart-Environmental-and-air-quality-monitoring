@@ -70,7 +70,7 @@ export default {
           borderColor: "#1e293b",
           pointRadius: 0,
           borderWidth: 3,
-          tension: 0.4,
+          tension: 0.2,
           fill: false
         }]
       },
@@ -88,13 +88,31 @@ export default {
         scales: {
           y: {
             min: 0,
-            max: 500,
+            suggestedMax: 100,
             grid: { color: "rgba(0,0,0,0.05)" },
             ticks: { font: { size: 10, weight: 'bold' } }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10, weight: 'bold' }, maxRotation: 0 }
+            ticks: { 
+              font: { size: 10, weight: 'bold' }, 
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 15,
+              callback: function(value, index, ticks) {
+                const label = this.getLabelForValue(value);
+                if (index === 0) return label;
+                const prevLabel = this.getLabelForValue(ticks[index-1].value);
+                
+                // Only show label if minute changes AND it's a multiple of 5
+                if (label !== prevLabel) {
+                   const [time, period] = label.split(' ');
+                   const [hour, minute] = time.split(':');
+                   if (parseInt(minute) % 5 === 0) return label;
+                }
+                return '';
+              }
+            }
           }
         }
       }
