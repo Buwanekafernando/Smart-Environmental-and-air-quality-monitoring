@@ -2,12 +2,13 @@
   <div class="humidity-card">
     <div class="card-header">
       <h2>💧 Humidity</h2>
-      <div class="current-val" v-if="humidityTrend.length > 0">
-        {{ humidityTrend[humidityTrend.length - 1] }}%
+      <div class="current-val" v-if="latestHumidity > 0">
+        {{ latestHumidity.toFixed(1) }}%
       </div>
     </div>
     <div class="chart-container">
-      <Line :data="computedChartData" :options="chartOptions"/>
+      <!-- :key forces vue-chartjs to fully re-render when data reference changes -->
+      <Line :key="chartKey" :data="computedChartData" :options="chartOptions"/>
     </div>
   </div>
 </template>
@@ -31,8 +32,10 @@ export default {
   name: "HumidityChart",
   components: { Line },
   props: {
-    humidityTrend: { type: Array, default: () => [] },
-    labels: { type: Array, default: () => [] }
+    humidityTrend:  { type: Array,  default: () => [] },
+    labels:         { type: Array,  default: () => [] },
+    latestHumidity: { type: Number, default: 0 },
+    chartKey:       { type: Number, default: 0 }
   },
   data() {
     return {

@@ -51,7 +51,7 @@
 
       <!-- Row 3: Insights & Costs -->
       <div class="grid-item health-section glass" id="health">
-        <HealthInsights :healthRisk="healthRisk" :aiStatus="aiStatus" :trendsData="trendsData"/>
+      <HealthInsights :healthRisk="liveHealthRisk" :aiStatus="aiStatus" :trendsData="trendsData"/>
       </div>
 
       <div class="grid-item cost-section glass">
@@ -133,12 +133,23 @@ export default {
     },
     latestCO() {
       if (!this.latestRecord) return 0;
-      // ✅ Use numeric co_percent from backend conversion layer
       return parseFloat(this.latestRecord.co_percent) || 0;
     },
+    latestHumidity() {
+      // ✅ Always pull from the newest record (sensorData[0])
+      return this.latestRecord ? parseFloat(this.latestRecord.humidity) || 0 : 0;
+    },
     latestMotion() {
-      // ✅ Field name is 'motion' in sensor data
       return this.latestRecord ? (this.latestRecord.motion === true || this.latestRecord.motion === "true" ? 1 : 0) : 0;
+    },
+    // ✅ Computed live health risk — updates on every WebSocket message
+    liveHealthRisk() {
+      if (!this.latestRecord) return { status: 'Loading...', color: '#888' };
+      const aqi = parseFloat(this.latestRecord.aqi_numeric) || 0;
+      const co  = parseFloat(this.latestRecord.co_percent)  || 0;
+      if (aqi > 200 || co > 70) return { status: 'UNSAFE',   color: 'red' };
+      if (aqi > 80  || co > 40) return { status: 'MODERATE', color: '#f59e0b' };
+      return { status: 'SAFE', color: 'green' };
     },
     aqiData() {
       if (!this.latestRecord) return { score: 0, label: "Loading...", color: "#888" };

@@ -125,13 +125,13 @@ class MLService:
     # ─────────────────────────────────────────────
     @staticmethod
     def classify_health_risk(current_data):
-        aqi = MLService.map_air_quality(current_data.get('air_quality', ""))
-        co = MLService.map_co_level(current_data.get('co_level', ""))
+        aqi = float(current_data.get('aqi_numeric', 0) or 0)
+        co  = float(current_data.get('co_percent',  0) or 0)
 
-        if aqi > 200 or co > 100:
+        if aqi > 200 or co > 70:
             return {"status": "UNSAFE", "color": "red"}
-        elif aqi > 100 or co > 40:
-            return {"status": "MODERATE", "color": "yellow"}
+        elif aqi > 80 or co > 40:
+            return {"status": "MODERATE", "color": "#f59e0b"}
         else:
             return {"status": "SAFE", "color": "green"}
 
