@@ -81,7 +81,6 @@ import COGauge from "../components/COGauge.vue"
 import HealthInsights from "../components/HealthInsights.vue"
 import SmokingStatus from "../components/SmokingStatus.vue"
 import CostPollution from "../components/CostPollution.vue"
-import ReportsSection from "../components/ReportsSection.vue"
 import axios from "axios";
 
 export default {
@@ -95,7 +94,6 @@ export default {
     HealthInsights,
     SmokingStatus,
     CostPollution,
-    ReportsSection,
     Line: () => import('vue-chartjs').then(m => m.Line)
   },
   data() {
@@ -468,10 +466,7 @@ export default {
   backdrop-filter: blur(12px);
 }
 
-.reports-section-wrapper {
-  margin-top: 10px;
-  border-radius: 24px;
-}
+
 
 /* Section Specific Grid Placement */
 .aqi-section {
