@@ -109,6 +109,9 @@ export default {
       fireAlert: null,
       audioCtx: null,
       oscillator: null,
+      gainNode: null,
+      sirenInterval: null,
+      _sirenHigh: false,       // tracks current frequency toggle state
       isMuted: false,
       miniChartOptions: {
         responsive: true,
@@ -221,11 +224,16 @@ export default {
     },
   },
   watch: {
-    isFireAlert(val) {
-      if (val) {
-        this.playAlarm();
-      } else {
-        this.stopAlarm();
+    isFireAlert: {
+      // immediate:true ensures the alarm fires on first load
+      // if alert is already active when the page mounts
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.playAlarm();
+        } else {
+          this.stopAlarm();
+        }
       }
     }
   },
@@ -261,6 +269,11 @@ export default {
 
         if (data.ai_status) {
           this.aiStatus = data.ai_status;
+        }
+
+        // ✅ Instant fire alert via WebSocket — no need to wait for 5s poll
+        if (data.fire_alert !== undefined) {
+          this.fireAlert = data.fire_alert;
         }
       });
     },
@@ -326,41 +339,62 @@ export default {
       }
     },
     playAlarm() {
-      if (this.audioCtx) return;
-      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      this.oscillator = this.audioCtx.createOscillator();
-      const gainNode = this.audioCtx.createGain();
-      
-      this.oscillator.type = 'sawtooth';
-      this.oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
-      this.oscillator.frequency.exponentialRampToValueAtTime(880, this.audioCtx.currentTime + 0.5);
-      
-      gainNode.gain.setValueAtTime(0.1, this.audioCtx.currentTime);
-      
-      this.oscillator.connect(gainNode);
-      gainNode.connect(this.audioCtx.destination);
-      
-      this.oscillator.loop = true;
-      this.oscillator.start();
-      
-      // Siren effect
-      this.sirenInterval = setInterval(() => {
-        if (this.oscillator) {
-          let freq = this.oscillator.frequency.value === 440 ? 880 : 440;
-          this.oscillator.frequency.exponentialRampToValueAtTime(freq, this.audioCtx.currentTime + 0.2);
+      // ✅ Don't create a second context if one is already running
+      if (this.audioCtx) {
+        // Resume if browser auto-suspended it (autoplay policy)
+        if (this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
         }
-      }, 500);
+        return;
+      }
+
+      try {
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        this.oscillator = this.audioCtx.createOscillator();
+        this.gainNode = this.audioCtx.createGain();
+
+        this.oscillator.type = 'sawtooth';
+        this.oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
+
+        // Medium volume — audible but not ear-piercing
+        this.gainNode.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+
+        this.oscillator.connect(this.gainNode);
+        this.gainNode.connect(this.audioCtx.destination);
+        this.oscillator.start();
+
+        // ✅ Use a flag to track freq state — reading .value is unreliable
+        this._sirenHigh = false;
+        this.sirenInterval = setInterval(() => {
+          if (this.oscillator && this.audioCtx) {
+            this._sirenHigh = !this._sirenHigh;
+            const targetFreq = this._sirenHigh ? 880 : 440;
+            this.oscillator.frequency.exponentialRampToValueAtTime(
+              targetFreq,
+              this.audioCtx.currentTime + 0.18
+            );
+          }
+        }, 450);
+
+        // ✅ Resume in case browser suspended it immediately after creation
+        this.audioCtx.resume();
+      } catch (e) {
+        console.warn('Audio alarm failed to start:', e);
+      }
     },
     stopAlarm() {
+      clearInterval(this.sirenInterval);
+      this.sirenInterval = null;
       if (this.oscillator) {
-        this.oscillator.stop();
+        try { this.oscillator.stop(); } catch (_) {}
         this.oscillator = null;
       }
       if (this.audioCtx) {
-        this.audioCtx.close();
+        try { this.audioCtx.close(); } catch (_) {}
         this.audioCtx = null;
       }
-      clearInterval(this.sirenInterval);
+      this.gainNode = null;
+      this._sirenHigh = false;
     },
     dismissFireAlert() {
       this.isMuted = true;

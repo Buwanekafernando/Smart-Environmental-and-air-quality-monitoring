@@ -12,12 +12,12 @@ def start_serial_reader(socketio=None):
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
         time.sleep(2)
-        print("✅ Connected to Serial")
+        print("[OK] Connected to Serial")
     except Exception as e:
-        print("❌ Serial connection error:", e)
+        print("[ERROR] Serial connection error:", e)
         return
 
-    print("📡 Listening for JSON data...\n")
+    print("[INFO] Listening for JSON data...\n")
 
     while True:
         try:
@@ -53,17 +53,20 @@ def start_serial_reader(socketio=None):
                 data["aqi_numeric"] = MLService.calculate_aqi(data.get("mq135", 0))
                 data["co_percent"] = MLService.calculate_co_percent(data.get("mq7", 0))
                 data["ai_status"] = ai_status
-                
+
+                # ✅ Compute fire alert and embed in event for instant frontend response
+                data["fire_alert"] = MLService.detect_fire_risk(data)
+
                 if "_id" in data:
                     data["_id"] = str(data["_id"])
 
                 if socketio:
                     socketio.emit('sensor_update', data)
 
-                print("✅ Stored & Emitted:", data)
+                print("[OK] Stored & Emitted:", data)
 
             except json.JSONDecodeError:
-                print("⚠️ Invalid JSON skipped")
+                print("[WARN] Invalid JSON skipped")
 
         except Exception as e:
-            print("❌ Error:", e)
+            print("[ERROR] Serial loop error:", e)
