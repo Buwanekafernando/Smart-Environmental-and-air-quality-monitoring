@@ -29,6 +29,7 @@
     <div class="dashboard-grid" id="overview">
       <!-- Row 1: Key Metrics -->
       <div class="grid-item aqi-section glass" id="air-quality">
+        <h2>Air Quality: {{ aqiData.score }}</h2>
         <AirQualityChart :aqiTrend="aqiTrend" :currentAqi="aqiData" :labels="timeLabels" :trendsData="trendsData"/>
       </div>
 
@@ -42,6 +43,7 @@
       </div>
 
       <div class="grid-item humidity-section glass">
+        <h2>Humidity: {{ latestHumidity }}%</h2>
         <HumidityChart :humidityTrend="humidityTrend" :labels="timeLabels"/>
       </div>
 
@@ -58,7 +60,7 @@
         <CostPollution :costData="pollutionCost"/>
       </div>
 
-      
+       
 
 
       
