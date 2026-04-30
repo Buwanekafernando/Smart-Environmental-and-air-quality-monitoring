@@ -13,9 +13,9 @@ except Exception as e:
 
 class MLService:
 
-    # ─────────────────────────────────────────────
-    # 🔁 HELPER: Convert Labels → Numeric Scores
-    # ─────────────────────────────────────────────
+    
+    #HELPER: Convert Labels → Numeric Scores
+    
     @staticmethod
     def map_air_quality(aq):
         mapping = {
@@ -36,9 +36,9 @@ class MLService:
         }
         return mapping.get(co, 0)
 
-    # ─────────────────────────────────────────────
-    # 📏 NUMERIC CONVERSIONS (ADC → SCALE)
-    # ─────────────────────────────────────────────
+   
+    #  NUMERIC CONVERSIONS (ADC → SCALE)
+    
     @staticmethod
     def calculate_aqi(mq135_raw):
         """
@@ -69,15 +69,15 @@ class MLService:
         except:
             return 0
 
-    # ─────────────────────────────────────────────
-    # 📊 TREND ANALYSIS (FIXED)
-    # ─────────────────────────────────────────────
+    
+    #TREND ANALYSIS (FIXED)
+   
     @staticmethod
     def analyze_trends(history_data):
         if len(history_data) < 5:
             return {"trend": "Stable", "forecast": "Not enough data"}
 
-        # ✅ Use numeric aqi_numeric for better precision
+        #  Use numeric aqi_numeric for better precision
         aqi_values = [d.get('aqi_numeric', 0) for d in history_data]
 
         sma_short = np.mean(aqi_values[:3])
@@ -102,9 +102,9 @@ class MLService:
             "sma_long": round(sma_long, 2)
         }
 
-    # ─────────────────────────────────────────────
-    # 🚬 SMOKING DETECTION (FIXED)
-    # ─────────────────────────────────────────────
+   
+    # SMOKING DETECTION (FIXED)
+    
     @staticmethod
     def detect_smoking(recent_data):
         if len(recent_data) < 2:
@@ -120,9 +120,9 @@ class MLService:
 
         return {"smoking_detected": False, "confidence": 0.0}
 
-    # ─────────────────────────────────────────────
-    # ❤️ HEALTH RISK (FIXED)
-    # ─────────────────────────────────────────────
+    
+    # HEALTH RISK (FIXED)
+    
     @staticmethod
     def classify_health_risk(current_data):
         aqi = float(current_data.get('aqi_numeric', 0) or 0)
@@ -135,9 +135,9 @@ class MLService:
         else:
             return {"status": "SAFE", "color": "green"}
 
-    # ─────────────────────────────────────────────
-    # 💰 NEW: POLLUTION COST MODEL
-    # ─────────────────────────────────────────────
+   
+    # POLLUTION COST MODEL
+    
     @staticmethod
     def calculate_pollution_cost(history_data):
         """
@@ -150,12 +150,12 @@ class MLService:
         total_emission = 0
 
         for d in history_data:
-            # ✅ Use numeric co_percent instead of string mapping
+            # Use numeric co_percent instead of string mapping
             co_val = d.get("co_percent", 0)
             total_emission += co_val
 
-        # 💡 Cost model (you can tune this)
-        COST_PER_UNIT = 0.05   # e.g., $0.05 per emission unit
+        # Pollution Cost model 
+        COST_PER_UNIT = 0.05   
 
         total_cost = total_emission * COST_PER_UNIT
         avg_cost = total_cost / len(history_data)
@@ -166,9 +166,9 @@ class MLService:
             "avg_cost": round(avg_cost, 2)
         }
 
-    # ─────────────────────────────────────────────
-    # 🔥 NEW: FIRE DETECTION ALERT SYSTEM
-    # ─────────────────────────────────────────────
+    
+    #  FIRE DETECTION ALERT SYSTEM
+    
     @staticmethod
     def detect_fire_risk(current_data):
         temp = float(current_data.get("temperature", 0) or 0)
@@ -206,9 +206,9 @@ class MLService:
             "color": "green"
         }
 
-    # ─────────────────────────────────────────────
-    # ⏱ PEAK HOURS (FIXED TIMESTAMP)
-    # ─────────────────────────────────────────────
+    #
+    #  PEAK HOURS 
+    
     @staticmethod
     def predict_air_quality(mq7, mq135, temp, humidity):
         if rf_model is None:

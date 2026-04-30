@@ -242,6 +242,7 @@ export default {
       // if alert is already active when the page mounts
       immediate: true,
       handler(val) {
+        console.log("isFireAlert changed:", val); // Debugging log
         if (val) {
           this.playAlarm();
         } else {
@@ -267,6 +268,7 @@ export default {
       });
 
       this.socket.on("sensor_update", (data) => {
+        console.log("Received sensor_update:", data); // Debugging log
         if (!data) return;
 
         // ✅ Fixed dedup: compare by timestamp instead of _id (which may not exist on raw data)
@@ -286,6 +288,7 @@ export default {
 
         // ✅ Instant fire alert via WebSocket — no need to wait for 5s poll
         if (data.fire_alert !== undefined) {
+          console.log("Updating fireAlert:", data.fire_alert); // Debugging log
           this.fireAlert = data.fire_alert;
         }
       });
@@ -346,6 +349,7 @@ export default {
         this.healthRisk = resHealth.data;
         this.coAnalysis = resCo.data;
         this.pollutionCost = resCost.data;
+        console.log("Fetched fireAlert:", resFire.data); // Debugging log
         this.fireAlert = resFire.data;
       } catch (error) {
         console.error("Error fetching updates:", error);
